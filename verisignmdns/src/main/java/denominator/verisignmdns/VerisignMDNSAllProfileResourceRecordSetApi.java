@@ -1,34 +1,28 @@
 package denominator.verisignmdns;
 
-import static denominator.common.Preconditions.checkArgument;
 import static denominator.common.Preconditions.checkNotNull;
-import static denominator.model.ResourceRecordSets.notNull;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import denominator.AllProfileResourceRecordSetApi;
-import denominator.Credentials;
 import denominator.common.Filter;
 import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
-import denominator.verisignmdns.VrsnMdns.Record;
+import denominator.verisignmdns.VerisignMdns.Record;
 
-public class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
+final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
     private final String domainName;
-    private final VrsnMdns api;
-    private final Provider<Credentials> credentialsProvider;
+    private final VerisignMdns api;
 
-    VerisignMDNSAllProfileResourceRecordSetApi(Provider<Credentials> credentialsProvider, String domainName,
-            VrsnMdns api) {
+    VerisignMDNSAllProfileResourceRecordSetApi(String domainName,
+            VerisignMdns api) {
         this.domainName = domainName;
         this.api = api;
-        this.credentialsProvider = credentialsProvider;
     }
 
     /**
@@ -38,31 +32,21 @@ public class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.A
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
         List<Record> recordList = api.getResourceRecordsList(domainName);
-        return VrsnContentConversionHelper.getSortedSetForDenominator(recordList).iterator();
+        return VerisignContentConversionHelper.getResourceRecordSet(recordList).iterator();
     }
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        checkNotNull(name, "name was null");
-        throw new VrsnMdnsException("Method Not Implemented", -1);
+        throw new UnsupportedOperationException();
     }
 
-    protected void put(Filter<ResourceRecordSet<?>> valid, ResourceRecordSet<?> rrset) {
-        checkNotNull(rrset, "rrset was null");
-        checkArgument(rrset.qualifier() != null, "no qualifier on: %s", rrset);
-        checkArgument(valid.apply(rrset), "%s failed on: %s", valid, rrset);
-
-        // @TODO IMPLEMENT -- in future development phase /////////
-        throw new VrsnMdnsException("Method Not Implemented", -1);
-
+    void put(Filter<ResourceRecordSet<?>> valid, ResourceRecordSet<?> rrset) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void put(ResourceRecordSet<?> rrset) {
-        // @ Keeping MOCK code for now...
-        // @TODO IMPLEMENT -- in future development phase /////////
-        put(notNull(), rrset);
-        throw new VrsnMdnsException("Method Not Implemented", -1);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -71,7 +55,7 @@ public class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.A
         checkNotNull(name, "name was null");
 
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Iterator<ResourceRecordSet<?>> result = VrsnContentConversionHelper.getSortedSetForDenominator(recordList)
+        Iterator<ResourceRecordSet<?>> result = VerisignContentConversionHelper.getResourceRecordSet(recordList)
                 .iterator();
         return result;
     }
@@ -84,44 +68,38 @@ public class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.A
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordByQualifier(qualifier);
-        SortedSet<ResourceRecordSet<?>> rrSet = VrsnContentConversionHelper.getSortedSetForDenominator(recordList);
+        Set<ResourceRecordSet<?>> rrSet = VerisignContentConversionHelper.getResourceRecordSet(recordList);
         if (!rrSet.isEmpty()) {
-            result = rrSet.first();
+            result = rrSet.iterator().next();
         }
         return result;
     }
 
     @Override
     public void deleteByNameTypeAndQualifier(String name, String type, String qualifier) {
-        // @ Keeping MOCK code for now...
-        // @TODO IMPLEMENT -- in future development phase /////////
-        throw new VrsnMdnsException("Method Not Implemented", -1);
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteByNameAndType(String name, String type) {
-        throw new VrsnMdnsException("Method Not Implemented", -1);
+        throw new UnsupportedOperationException();
     }
 
     static class Factory implements denominator.AllProfileResourceRecordSetApi.Factory {
-        private Map<Zone, SortedSet<ResourceRecordSet<?>>> records;
-        private String domainName;
-        private VrsnMdns api;
-        private final Provider<Credentials> credentialsProvider;
+        private Map<Zone, Set<ResourceRecordSet<?>>> records;
+        private VerisignMdns api;
 
-        // unbound wildcards are not currently injectable in dagger
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
-        Factory(Provider<Credentials> credentialsProvider, denominator.Provider provider, VrsnMdns api) {
+        Factory(denominator.Provider provider, VerisignMdns api) {
             this.records = Map.class.cast(records);
-            this.credentialsProvider = credentialsProvider;
             this.api = api;
         }
 
         @Override
         public AllProfileResourceRecordSetApi create(String idOrName) {
-            return new VerisignMDNSAllProfileResourceRecordSetApi(credentialsProvider, idOrName, api);
+            return new VerisignMDNSAllProfileResourceRecordSetApi(idOrName, api);
         }
     }
 }
+

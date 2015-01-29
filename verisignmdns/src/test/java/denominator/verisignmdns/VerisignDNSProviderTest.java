@@ -1,6 +1,6 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VrsnMDNSTest.VALID_URL;
+import static denominator.verisignmdns.VerisignMDNSTest.VALID_URL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
@@ -11,15 +11,14 @@ import org.testng.annotations.Test;
 
 import denominator.verisignmdns.VerisignMDNSProvider;
 
-public class VrsnDNSProviderTest {
+public class VerisignDNSProviderTest {
 
     @Test
     public void credentialTypeToParameterNames() {
         VerisignMDNSProvider vrsnDNSProvider = new VerisignMDNSProvider();
         Map<String, Collection<String>> actualResult = vrsnDNSProvider.credentialTypeToParameterNames();
         assertNotNull(actualResult);
-
-        Map<String, Collection<String>> expectedResult = VrsnMDNSTest.MockcredentialTypeToParameterNamesResponse();
+        Map<String, Collection<String>> expectedResult = VerisignMDNSTest.MockcredentialTypeToParameterNamesResponse();
         assertNotNull(expectedResult);
         assertEquals(actualResult.containsKey("password"), expectedResult.containsKey("password"));
     }
@@ -29,10 +28,8 @@ public class VrsnDNSProviderTest {
         VerisignMDNSProvider vrsnDNSProvider = new VerisignMDNSProvider();
         Map<String, Collection<String>> actualResult = vrsnDNSProvider.profileToRecordTypes();
         assertNotNull(actualResult);
-
-        Map<String, Collection<String>> expectedResult = VrsnMDNSTest.mockProfileToRecordTypesResponse();
+        Map<String, Collection<String>> expectedResult = VerisignMDNSTest.mockProfileToRecordTypesResponse();
         assertNotNull(actualResult);
-
         assertEquals(actualResult, expectedResult);
     }
 
@@ -41,7 +38,7 @@ public class VrsnDNSProviderTest {
         VerisignMDNSProvider vrsnDNSProvider = new VerisignMDNSProvider();
         String actualResult = vrsnDNSProvider.url();
         assertNotNull(actualResult);
-
         assertEquals(actualResult, VALID_URL);
     }
 }
+

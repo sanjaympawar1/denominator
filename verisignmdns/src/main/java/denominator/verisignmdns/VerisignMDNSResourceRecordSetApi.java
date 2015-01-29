@@ -5,55 +5,43 @@ import static denominator.common.Preconditions.checkNotNull;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
-import denominator.Credentials;
 import denominator.ResourceRecordSetApi;
 import denominator.common.Util;
 import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
-import denominator.verisignmdns.VrsnMdns.Record;
+import denominator.verisignmdns.VerisignMdns.Record;
 
-public final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
+final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
     private final String domainName;
-    private final VrsnMdns api;
-    private final Provider<Credentials> credentialsProvider;
+    private final VerisignMdns api;
 
-    VerisignMDNSResourceRecordSetApi(Provider<Credentials> credentialsProvider, String domainName, VrsnMdns api) {
+    VerisignMDNSResourceRecordSetApi(String domainName, VerisignMdns api) {
         this.domainName = domainName;
         this.api = api;
-        this.credentialsProvider = credentialsProvider;
     }
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
-
         List<Record> recordList = api.getResourceRecordsList(domainName);
-        return VrsnContentConversionHelper.getSortedSetForDenominator(recordList).iterator();
+        return VerisignContentConversionHelper.getResourceRecordSet(recordList).iterator();
     }
 
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
-
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Iterator<ResourceRecordSet<?>> result = VrsnContentConversionHelper.getSortedSetForDenominator(recordList)
+        Iterator<ResourceRecordSet<?>> result = VerisignContentConversionHelper.getResourceRecordSet(recordList)
                 .iterator();
         return result;
     }
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        try {
-            throw new VrsnMdnsException("Method Not Implemented", -1);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+       throw new UnsupportedOperationException();
     }
 
     @Override
@@ -63,16 +51,15 @@ public final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSet
 
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        SortedSet<ResourceRecordSet<?>> tempSet = VrsnContentConversionHelper.getSortedSetForDenominator(recordList);
-        if (tempSet != null && tempSet.size() > 0) {
-            result = tempSet.first();
+        Set<ResourceRecordSet<?>> tempSet = VerisignContentConversionHelper.getResourceRecordSet(recordList);
+        if (tempSet.size() > 0) {
+            result = tempSet.iterator().next();
         }
         return result;
     }
 
     @Override
     public void put(ResourceRecordSet<?> rrset) {
-
         checkNotNull(rrset, "Resource Record was null");
         checkNotNull(rrset.name(), "Resource Record Name was null");
         checkNotNull(rrset.type(), "Resource Record Type was null");
@@ -92,65 +79,52 @@ public final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSet
         }
         String rData = getRDataStringFromRRSet(rrset);
         api.createResourceRecord(domainName, rrset.type(), rrset.name(), "" + ttlInt, rData);
-
     }
 
     @Override
     public void deleteByNameAndType(String name, String type) {
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        if (recordList != null && !recordList.isEmpty()) {
-            // delete all records in recordList
-            for (Record record : recordList) {
-                api.deleteRecourceRecord(domainName, record.id);
-            }
-
-        } else {
-            throw new RuntimeException("deleteByNameAndType() failled to delete record for domain :" + domainName
-                    + " type :" + type + " No Record Found");
+        // delete all records in recordList
+        for (Record record : recordList) {
+            api.deleteRecourceRecord(domainName, record.id);
         }
     }
 
     public static final class Factory implements denominator.ResourceRecordSetApi.Factory {
-        private Map<Zone, SortedSet<ResourceRecordSet<?>>> records;
-        private String domainName;
-        private VrsnMdns api;
-        private Provider<Credentials> credentialsProvider;
+        private Map<Zone, Set<ResourceRecordSet<?>>> records;
+        private VerisignMdns api;
 
-        // unbound wildcards are not currently injectable in dagger
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
-        Factory(Provider<Credentials> credentialsProvider, denominator.Provider provider, VrsnMdns api) {
+        Factory(denominator.Provider provider, VerisignMdns api) {
             this.records = Map.class.cast(records);
-            String url = provider.url();
             this.api = api;
-            this.credentialsProvider = credentialsProvider;
         }
 
         @Override
         public ResourceRecordSetApi create(String idOrName) {
             Zone zone = Zone.create(idOrName);
-            return new VerisignMDNSResourceRecordSetApi(credentialsProvider, idOrName, api);
+            return new VerisignMDNSResourceRecordSetApi(idOrName, api);
         }
     }
 
-    private String getRDataStringFromRRSet(ResourceRecordSet rRSet) {
+    private String getRDataStringFromRRSet(ResourceRecordSet rrSet) {
         StringBuilder sb = new StringBuilder();
-        if (rRSet != null && rRSet.records() != null) {
-            if (rRSet.type().equals("NAPTR")) {
-                sb.append(VrsnMdnsRequestHelper.getNAPTRData(rRSet));
-            } else {
-                for (Object obj : rRSet.records()) {
-                    if (sb.length() > 0) {
-                        sb.append(",");
-                    }
-                    if (obj instanceof Map) {
-                        sb.append(Util.flatten((Map<String, Object>) obj));
-                    } else {
-                        sb.append(obj.toString());
-                    }
+        if (rrSet.type().equals("NAPTR")) {
+            sb.append(VerisignMdnsRequestHelper.getNAPTRData(rrSet));
+        } else {
+            for (Object obj : rrSet.records()) {
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+                if (obj instanceof Map) {
+                    sb.append(Util.flatten((Map<String, Object>) obj));
+                } else {
+                    sb.append(obj.toString());
                 }
             }
         }
         return sb.toString();
     }
 }
+

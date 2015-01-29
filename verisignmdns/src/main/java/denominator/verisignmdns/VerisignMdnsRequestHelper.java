@@ -4,7 +4,7 @@ import java.util.Map;
 
 import denominator.model.ResourceRecordSet;
 
-class VrsnMdnsRequestHelper {
+final class VerisignMdnsRequestHelper {
 
     /**
      * This method parses ResourceRecordSet.record data to construct rData
@@ -74,3 +74,4 @@ class VrsnMdnsRequestHelper {
         return input;
     }
 }
+

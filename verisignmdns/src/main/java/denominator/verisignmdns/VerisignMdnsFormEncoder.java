@@ -4,7 +4,7 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 
-class VrsnMdnsFormEncoder implements Encoder {
+final class VerisignMdnsFormEncoder implements Encoder {
 
     /*
      * (non-Javadoc)
@@ -14,7 +14,6 @@ class VrsnMdnsFormEncoder implements Encoder {
     @Override
     public void encode(Object object, RequestTemplate template) throws EncodeException {
         // TODO Auto-generated method stub
-
     }
-
 }
+

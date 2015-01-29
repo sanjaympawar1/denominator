@@ -19,9 +19,9 @@ import denominator.config.GeoUnsupported;
 import denominator.config.NothingToClose;
 import denominator.config.WeightedUnsupported;
 
-import denominator.verisignmdns.VrsnMdnsContentHandler.RecordListHandler;
-import denominator.verisignmdns.VrsnMdnsContentHandler.ZoneListHandler;
-import denominator.verisignmdns.VrsnMdnsErrorDecoder.VrsnMdnsError;
+import denominator.verisignmdns.VerisignMdnsContentHandler.RecordListHandler;
+import denominator.verisignmdns.VerisignMdnsContentHandler.ZoneListHandler;
+import denominator.verisignmdns.VerisignMdnsErrorDecoder.VrsnMdnsError;
 import feign.Feign;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
@@ -99,7 +99,7 @@ public class VerisignMDNSProvider extends BasicProvider {
 
         @Singleton
         @Provides
-        VrsnMdns vrsnMdns(Feign feign, VrsnMdnsTarget target) {
+        VerisignMdns vrsnMdns(Feign feign, VerisignMdnsTarget target) {
             return feign.newInstance(target);
         }
     }
@@ -113,7 +113,7 @@ public class VerisignMDNSProvider extends BasicProvider {
 
         @Provides
         Encoder formEncoder() {
-            return new VrsnMdnsFormEncoder();
+            return new VerisignMdnsFormEncoder();
         }
 
         @Provides
@@ -125,8 +125,9 @@ public class VerisignMDNSProvider extends BasicProvider {
         }
 
         @Provides
-        ErrorDecoder errorDecoders(VrsnMdnsErrorDecoder errorDecoder) {
+        ErrorDecoder errorDecoders(VerisignMdnsErrorDecoder errorDecoder) {
             return errorDecoder;
         }
     }
 }
+

@@ -1,12 +1,12 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VrsnMDNSTest.TEST_PASSWORD;
-import static denominator.verisignmdns.VrsnMDNSTest.TEST_USER_NAME;
-import static denominator.verisignmdns.VrsnMDNSTest.VALID_ZONE_NAME1;
-import static denominator.verisignmdns.VrsnMDNSTest.authFailureResponse;
-import static denominator.verisignmdns.VrsnMDNSTest.mockZoneApi;
-import static denominator.verisignmdns.VrsnMDNSTest.zoneListRequestTemplate;
-import static denominator.verisignmdns.VrsnMDNSTest.zoneListResponse;
+import static denominator.verisignmdns.VerisignMDNSTest.TEST_PASSWORD;
+import static denominator.verisignmdns.VerisignMDNSTest.TEST_USER_NAME;
+import static denominator.verisignmdns.VerisignMDNSTest.VALID_ZONE_NAME1;
+import static denominator.verisignmdns.VerisignMDNSTest.authFailureResponse;
+import static denominator.verisignmdns.VerisignMDNSTest.mockZoneApi;
+import static denominator.verisignmdns.VerisignMDNSTest.zoneListRequestTemplate;
+import static denominator.verisignmdns.VerisignMDNSTest.zoneListResponse;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -30,13 +30,11 @@ public class VerisignMDNSZoneApiTest {
         MockWebServer server = new MockWebServer();
         server.enqueue(new MockResponse().setBody(zoneListResponse));
         server.play();
-
         try {
             ZoneApi api = mockZoneApi(server.getPort());
             Zone zone = api.iterator().next();
             assertEquals(zone.name(), VALID_ZONE_NAME1);
             assertNull(zone.id());
-
             assertEquals(server.getRequestCount(), 1);
 
             String expectedRequest = format(zoneListRequestTemplate, TEST_USER_NAME, TEST_PASSWORD);
@@ -51,15 +49,14 @@ public class VerisignMDNSZoneApiTest {
         MockWebServer server = new MockWebServer();
         server.enqueue(new MockResponse().setBody(authFailureResponse));
         server.play();
-
         try {
             ZoneApi api = mockZoneApi(server.getPort());
             Iterator<Zone> iter = api.iterator();
             assertEquals(server.getRequestCount(), 1);
             assertFalse(iter.hasNext());
-
         } finally {
             server.shutdown();
         }
     }
 }
+

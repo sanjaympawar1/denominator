@@ -20,8 +20,7 @@ import feign.sax.SAXDecoder.ContentHandlerWithResult;
 import static feign.Util.UTF_8;
 import static denominator.common.Util.slurp;
 
-class VrsnMdnsErrorDecoder implements ErrorDecoder {
-
+final class VerisignMdnsErrorDecoder implements ErrorDecoder {
     static final Map<String, Integer> MDNS_ERROR_TO_INT_CODE_MAP = new LinkedHashMap<String, Integer>();
     static {
         MDNS_ERROR_TO_INT_CODE_MAP.put("ERROR_MISSING_INVALID_INPUT", new Integer(1));
@@ -33,7 +32,7 @@ class VrsnMdnsErrorDecoder implements ErrorDecoder {
     private final Decoder decoder;
 
     @Inject
-    VrsnMdnsErrorDecoder(Decoder decoder) {
+    VerisignMdnsErrorDecoder(Decoder decoder) {
         this.decoder = decoder;
     }
 
@@ -51,7 +50,7 @@ class VrsnMdnsErrorDecoder implements ErrorDecoder {
             if (error.description != null)
                 message = format("%s: %s", message, error.description);
 
-            return new VrsnMdnsException(message, error.code);
+            return new VerisignMdnsException(message, error.code);
         } catch (IOException ignored) {
             return FeignException.errorStatus(methodKey, response);
         } catch (Exception propagate) {
@@ -79,7 +78,6 @@ class VrsnMdnsErrorDecoder implements ErrorDecoder {
                 try {
                     Integer tempCode = MDNS_ERROR_TO_INT_CODE_MAP.get(attributes.getValue("code"));
                     code = tempCode.intValue();
-
                 } catch (Exception ex) {
                     // ignore
                 }
@@ -102,3 +100,4 @@ class VrsnMdnsErrorDecoder implements ErrorDecoder {
     }
 
 }
+

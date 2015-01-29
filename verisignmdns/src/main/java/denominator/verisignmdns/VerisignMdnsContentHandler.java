@@ -10,10 +10,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import denominator.model.Zone;
-import denominator.verisignmdns.VrsnMdns.Record;
+import denominator.verisignmdns.VerisignMdns.Record;
 import feign.sax.SAXDecoder.ContentHandlerWithResult;
 
-class VrsnMdnsContentHandler {
+final class VerisignMdnsContentHandler {
 
     static class ZoneListHandler extends DefaultHandler implements ContentHandlerWithResult<List<Zone>> {
         @Inject
@@ -21,9 +21,7 @@ class VrsnMdnsContentHandler {
         }
 
         private final List<Zone> zones = new ArrayList<Zone>();
-        private boolean domainElementFound = false; // flag for getting the
-                                                    // value...
-
+        private boolean domainElementFound = false;
         @Override
         public List<Zone> result() {
             return zones;
@@ -60,9 +58,7 @@ class VrsnMdnsContentHandler {
         }
 
         private Record rr = new Record();
-        private boolean processingRR = false; // flag indicating currently
-                                              // inside resource record
-                                              // element..
+        private boolean processingRR = false;
         private String currentElementName = "";
         private String rDataString = "";
 
@@ -137,20 +133,18 @@ class VrsnMdnsContentHandler {
                 if (currentElementName.equals(":type")) {
                     rr.type = new String(ch, start, length);
                 }
-
                 if (currentElementName.equals(":ttl")) {
                     try {
                         String temp = new String(ch, start, length);
                         rr.ttl = Integer.parseInt(temp);
                     } catch (Exception ex) {
-                        // DO NOTHING..?
+                        // DO NOTHING
                     }
                 }
                 if (currentElementName.equals(":rData")) {
                     String tempStr = new String(ch, start, length);
                     rDataString += tempStr;
                 }
-
             }
         }
     }
@@ -165,3 +159,4 @@ class VrsnMdnsContentHandler {
         return result;
     }
 }
+
