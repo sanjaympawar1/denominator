@@ -8,11 +8,11 @@ import javax.inject.Provider;
 import denominator.Credentials;
 import denominator.model.Zone;
 
-final class VerisignMDNSZoneApi implements denominator.ZoneApi {
+final class VerisignMdnsZoneApi implements denominator.ZoneApi {
     private final VerisignMdns api;
 
     @Inject
-    VerisignMDNSZoneApi(VerisignMdns api) {
+    VerisignMdnsZoneApi(VerisignMdns api) {
         this.api = api;
     }
 

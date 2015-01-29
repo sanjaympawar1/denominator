@@ -18,7 +18,7 @@ import java.util.Set;
 import denominator.model.ResourceRecordSet;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-final class VerisignContentConversionHelper {
+final class VerisignMdnsContentConversionHelper {
 
     static ResourceRecordSet<?> convertMDNSRecordToResourceRecordSet(Record mDNSRecord) {
 

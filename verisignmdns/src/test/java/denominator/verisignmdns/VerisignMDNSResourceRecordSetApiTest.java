@@ -1,23 +1,23 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_PASSWORD;
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_USER_NAME;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_OWNER1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_RDATA1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_RR_TYPE1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_TTL1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_ZONE_NAME1;
-import static denominator.verisignmdns.VerisignMDNSTest.createRequestARecordResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.createRequestARecordTemplete;
-import static denominator.verisignmdns.VerisignMDNSTest.mockResourceRecordSetApi;
-import static denominator.verisignmdns.VerisignMDNSTest.rrByNameAndTypeTemplate;
-import static denominator.verisignmdns.VerisignMDNSTest.rrDeleteResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.rrDeleteTemplete;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListCNAMETypesResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListInvalidZoneResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListRequestTemplate;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListValidResponseNoRecords;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListValildResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
+import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.mockResourceRecordSetApi;
+import static denominator.verisignmdns.VerisignMdnsTest.rrByNameAndTypeTemplate;
+import static denominator.verisignmdns.VerisignMdnsTest.rrDeleteResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.rrDeleteTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListCNAMETypesResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListInvalidZoneResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListRequestTemplate;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListValidResponseNoRecords;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListValildResponse;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -35,10 +35,10 @@ import com.google.mockwebserver.MockWebServer;
 import denominator.ResourceRecordSetApi;
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.CNAMEData;
-import denominator.verisignmdns.VerisignContentConversionHelper;
+import denominator.verisignmdns.VerisignMdnsContentConversionHelper;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-public class VerisignMDNSResourceRecordSetApiTest {
+public class VerisignMdnsResourceRecordSetApiTest {
 
     @Test
     public void rrListInvalidZone() throws IOException, InterruptedException {
@@ -189,8 +189,8 @@ public class VerisignMDNSResourceRecordSetApiTest {
         server.play();
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
-            Record aMDNSRecord = VerisignMDNSTest.mockCNameRecord();
-            ResourceRecordSet<?> inputRecordSet = VerisignContentConversionHelper
+            Record aMDNSRecord = VerisignMdnsTest.mockCNameRecord();
+            ResourceRecordSet<?> inputRecordSet = VerisignMdnsContentConversionHelper
                     .convertMDNSRecordToResourceRecordSet(aMDNSRecord);
             api.put(inputRecordSet);
 

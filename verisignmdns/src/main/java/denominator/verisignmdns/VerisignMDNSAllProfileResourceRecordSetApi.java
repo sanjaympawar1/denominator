@@ -15,11 +15,11 @@ import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
+final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
     private final String domainName;
     private final VerisignMdns api;
 
-    VerisignMDNSAllProfileResourceRecordSetApi(String domainName,
+    VerisignMdnsAllProfileResourceRecordSetApi(String domainName,
             VerisignMdns api) {
         this.domainName = domainName;
         this.api = api;
@@ -32,7 +32,7 @@ final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.Al
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
         List<Record> recordList = api.getResourceRecordsList(domainName);
-        return VerisignContentConversionHelper.getResourceRecordSet(recordList).iterator();
+        return VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList).iterator();
     }
 
     @Override
@@ -55,7 +55,7 @@ final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.Al
         checkNotNull(name, "name was null");
 
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Iterator<ResourceRecordSet<?>> result = VerisignContentConversionHelper.getResourceRecordSet(recordList)
+        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList)
                 .iterator();
         return result;
     }
@@ -68,7 +68,7 @@ final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.Al
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordByQualifier(qualifier);
-        Set<ResourceRecordSet<?>> rrSet = VerisignContentConversionHelper.getResourceRecordSet(recordList);
+        Set<ResourceRecordSet<?>> rrSet = VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList);
         if (!rrSet.isEmpty()) {
             result = rrSet.iterator().next();
         }
@@ -98,7 +98,7 @@ final class VerisignMDNSAllProfileResourceRecordSetApi implements denominator.Al
 
         @Override
         public AllProfileResourceRecordSetApi create(String idOrName) {
-            return new VerisignMDNSAllProfileResourceRecordSetApi(idOrName, api);
+            return new VerisignMdnsAllProfileResourceRecordSetApi(idOrName, api);
         }
     }
 }

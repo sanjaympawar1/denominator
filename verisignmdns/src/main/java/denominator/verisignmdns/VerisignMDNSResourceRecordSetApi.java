@@ -15,11 +15,11 @@ import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
+final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     private final String domainName;
     private final VerisignMdns api;
 
-    VerisignMDNSResourceRecordSetApi(String domainName, VerisignMdns api) {
+    VerisignMdnsResourceRecordSetApi(String domainName, VerisignMdns api) {
         this.domainName = domainName;
         this.api = api;
     }
@@ -27,14 +27,14 @@ final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
         List<Record> recordList = api.getResourceRecordsList(domainName);
-        return VerisignContentConversionHelper.getResourceRecordSet(recordList).iterator();
+        return VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList).iterator();
     }
 
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Iterator<ResourceRecordSet<?>> result = VerisignContentConversionHelper.getResourceRecordSet(recordList)
+        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList)
                 .iterator();
         return result;
     }
@@ -51,7 +51,7 @@ final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
 
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Set<ResourceRecordSet<?>> tempSet = VerisignContentConversionHelper.getResourceRecordSet(recordList);
+        Set<ResourceRecordSet<?>> tempSet = VerisignMdnsContentConversionHelper.getResourceRecordSet(recordList);
         if (tempSet.size() > 0) {
             result = tempSet.iterator().next();
         }
@@ -104,7 +104,7 @@ final class VerisignMDNSResourceRecordSetApi implements ResourceRecordSetApi {
         @Override
         public ResourceRecordSetApi create(String idOrName) {
             Zone zone = Zone.create(idOrName);
-            return new VerisignMDNSResourceRecordSetApi(idOrName, api);
+            return new VerisignMdnsResourceRecordSetApi(idOrName, api);
         }
     }
 

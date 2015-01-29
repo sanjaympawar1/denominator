@@ -1,8 +1,8 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMDNSTest.METHODKEY;
-import static denominator.verisignmdns.VerisignMDNSTest.mockResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListInvalidZoneResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.METHODKEY;
+import static denominator.verisignmdns.VerisignMdnsTest.mockResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListInvalidZoneResponse;
 import static org.testng.Assert.assertNotNull;
 
 import org.testng.annotations.Test;
@@ -15,7 +15,7 @@ public class VerisignMdnsErrorDecoderTest {
     @Test
     public void decode() {
         Response response = mockResponse(rrListInvalidZoneResponse);
-        ErrorDecoder errorDecoder = VerisignMDNSTest.mockErrorDecoder();
+        ErrorDecoder errorDecoder = VerisignMdnsTest.mockErrorDecoder();
         Exception actualResult = errorDecoder.decode(METHODKEY, response);
         assertNotNull(actualResult);
     }

@@ -23,14 +23,14 @@ import denominator.Denominator;
 import denominator.ResourceRecordSetApi;
 import denominator.ZoneApi;
 import denominator.model.ResourceRecordSet;
-import denominator.verisignmdns.VerisignMDNSAllProfileResourceRecordSetApi;
-import denominator.verisignmdns.VerisignMDNSProvider;
-import denominator.verisignmdns.VerisignMDNSProvider.XMLCodec;
+import denominator.verisignmdns.VerisignMdnsAllProfileResourceRecordSetApi;
+import denominator.verisignmdns.VerisignMdnsProvider;
+import denominator.verisignmdns.VerisignMdnsProvider.XMLCodec;
 import denominator.verisignmdns.VerisignMdns.Record;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 
-public class VerisignMDNSTest {
+public class VerisignMdnsTest {
     public static final String VALID_TTL1 = "86000";
     public static final String VALID_RR_TYPE2 = "TXT";
     public static final String VALID_RR_TYPE1 = "CNAME";
@@ -302,7 +302,7 @@ public class VerisignMDNSTest {
              + "</S:Envelope>";
 
     public static ZoneApi mockZoneApi(final int port) {
-        return Denominator.create(new VerisignMDNSProvider() {
+        return Denominator.create(new VerisignMdnsProvider() {
             @Override
             public String url() {
                 return "http://localhost:" + port + "/";
@@ -311,7 +311,7 @@ public class VerisignMDNSTest {
     }
 
     public static ResourceRecordSetApi mockResourceRecordSetApi(final int port) {
-        return Denominator.create(new VerisignMDNSProvider() {
+        return Denominator.create(new VerisignMdnsProvider() {
             @Override
             public String url() {
                 return "http://localhost:" + port + "/";
@@ -319,8 +319,8 @@ public class VerisignMDNSTest {
         }, credentials(TEST_USER_NAME, TEST_PASSWORD)).api().basicRecordSetsInZone(VALID_ZONE_NAME1);
     }
 
-    public static VerisignMDNSAllProfileResourceRecordSetApi mockAllProfileResourceRecordSetApi(final int port) {
-        return (VerisignMDNSAllProfileResourceRecordSetApi) Denominator.create(new VerisignMDNSProvider() {
+    public static VerisignMdnsAllProfileResourceRecordSetApi mockAllProfileResourceRecordSetApi(final int port) {
+        return (VerisignMdnsAllProfileResourceRecordSetApi) Denominator.create(new VerisignMdnsProvider() {
             @Override
             public String url() {
                 return "http://localhost:" + port + "/";

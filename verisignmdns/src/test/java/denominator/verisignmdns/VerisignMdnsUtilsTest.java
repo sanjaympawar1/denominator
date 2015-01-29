@@ -10,19 +10,19 @@ import javax.inject.Provider;
 import org.testng.annotations.Test;
 
 import denominator.Credentials;
-import denominator.verisignmdns.VerisignUtils;
+import denominator.verisignmdns.VerisignMdnsUtils;
 
-public class VerisignUtilsTest {
+public class VerisignMdnsUtilsTest {
 
     @Test
     public void TestGetMapOfCredentials() {
-        Provider<Credentials> aCredentials = (Provider<Credentials>) VerisignMDNSTest.mockProviderCredentials();
-        Map<String, String> actualResult = VerisignUtils.getMapOfCredentials(aCredentials);
+        Provider<Credentials> aCredentials = (Provider<Credentials>) VerisignMdnsTest.mockProviderCredentials();
+        Map<String, String> actualResult = VerisignMdnsUtils.getMapOfCredentials(aCredentials);
         assertNotNull(actualResult);
         assertTrue(actualResult.containsKey("username"));
         assertTrue(actualResult.containsKey("password"));
-        assertEquals(actualResult.get("username"), VerisignMDNSTest.TEST_USER_NAME);
-        assertEquals(actualResult.get("password"), VerisignMDNSTest.TEST_PASSWORD);
+        assertEquals(actualResult.get("username"), VerisignMdnsTest.TEST_USER_NAME);
+        assertEquals(actualResult.get("password"), VerisignMdnsTest.TEST_PASSWORD);
     }
 }
 

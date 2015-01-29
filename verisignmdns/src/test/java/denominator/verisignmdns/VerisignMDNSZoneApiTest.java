@@ -1,12 +1,12 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_PASSWORD;
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_USER_NAME;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_ZONE_NAME1;
-import static denominator.verisignmdns.VerisignMDNSTest.authFailureResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.mockZoneApi;
-import static denominator.verisignmdns.VerisignMDNSTest.zoneListRequestTemplate;
-import static denominator.verisignmdns.VerisignMDNSTest.zoneListResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
+import static denominator.verisignmdns.VerisignMdnsTest.authFailureResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.mockZoneApi;
+import static denominator.verisignmdns.VerisignMdnsTest.zoneListRequestTemplate;
+import static denominator.verisignmdns.VerisignMdnsTest.zoneListResponse;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -24,7 +24,7 @@ import denominator.ZoneApi;
 import denominator.model.Zone;
 
 @Test(singleThreaded = true)
-public class VerisignMDNSZoneApiTest {
+public class VerisignMdnsZoneApiTest {
     @Test
     public void validResponseWithZoneList() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();

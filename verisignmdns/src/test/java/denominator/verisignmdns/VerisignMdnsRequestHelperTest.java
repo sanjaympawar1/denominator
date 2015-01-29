@@ -1,9 +1,9 @@
 package denominator.verisignmdns;
 
 import static denominator.model.ResourceRecordSets.naptr;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_OWNER1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_RData_NAPTR;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_TTL1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RData_NAPTR;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;

@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.inject.Provider;
 import denominator.Credentials;
 
-class VerisignUtils {
+class VerisignMdnsUtils {
 
     /**
      * Converts Provider<Credentials> object into Map<String,String> ie

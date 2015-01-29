@@ -1,16 +1,16 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMDNSTest.RESOURCE_RECORD_ID;
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_PASSWORD;
-import static denominator.verisignmdns.VerisignMDNSTest.TEST_USER_NAME;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_OWNER1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_RDATA1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_RR_TYPE1;
-import static denominator.verisignmdns.VerisignMDNSTest.VALID_TTL1;
-import static denominator.verisignmdns.VerisignMDNSTest.mockAllProfileResourceRecordSetApi;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListCNAMETypesResponse;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListCNAMETypesTemplete;
-import static denominator.verisignmdns.VerisignMDNSTest.rrListValildResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.RESOURCE_RECORD_ID;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
+import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
+import static denominator.verisignmdns.VerisignMdnsTest.mockAllProfileResourceRecordSetApi;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListCNAMETypesResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListCNAMETypesTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.rrListValildResponse;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -26,9 +26,9 @@ import com.google.mockwebserver.MockWebServer;
 
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.CNAMEData;
-import denominator.verisignmdns.VerisignMDNSAllProfileResourceRecordSetApi;
+import denominator.verisignmdns.VerisignMdnsAllProfileResourceRecordSetApi;
 
-public class VerisignMDNSAllProfileResourceRecordSetApiTest {
+public class VerisignMdnsAllProfileResourceRecordSetApiTest {
 
     @Test
     public void getByNameTypeAndQualifier() throws IOException, InterruptedException {
@@ -36,7 +36,7 @@ public class VerisignMDNSAllProfileResourceRecordSetApiTest {
         server.enqueue(new MockResponse().setBody(rrListCNAMETypesResponse));
         server.play();
         try {
-            VerisignMDNSAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
+            VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             ResourceRecordSet<?> actualResult = vrsnAllProfileResourceRecordSetApi.getByNameTypeAndQualifier(
                     TEST_USER_NAME, VALID_RR_TYPE1, RESOURCE_RECORD_ID);
@@ -56,7 +56,7 @@ public class VerisignMDNSAllProfileResourceRecordSetApiTest {
         server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.play();
         try {
-            VerisignMDNSAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
+            VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterateByNameAndType(
                     VALID_OWNER1, VALID_RR_TYPE1);
@@ -87,7 +87,7 @@ public class VerisignMDNSAllProfileResourceRecordSetApiTest {
         server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.play();
         try {
-            VerisignMDNSAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
+            VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterator();
             assertNotNull(actulResult);

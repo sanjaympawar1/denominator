@@ -28,10 +28,10 @@ import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.sax.SAXDecoder;
 
-public class VerisignMDNSProvider extends BasicProvider {
+public class VerisignMdnsProvider extends BasicProvider {
     private final String url;
 
-    public VerisignMDNSProvider() {
+    public VerisignMdnsProvider() {
         this(null);
     }
 
@@ -39,7 +39,7 @@ public class VerisignMDNSProvider extends BasicProvider {
      * @param url
      *            if empty or null use default
      */
-    public VerisignMDNSProvider(String url) {
+    public VerisignMdnsProvider(String url) {
         this.url = url == null || url.isEmpty() ? "https://api.dns-tool.com/dnsa-ws/V2.0/dnsaapi" : url;
     }
 
@@ -76,24 +76,24 @@ public class VerisignMDNSProvider extends BasicProvider {
 
         @Provides
         @Singleton
-        ZoneApi provideZoneApi(VerisignMDNSZoneApi in) {
+        ZoneApi provideZoneApi(VerisignMdnsZoneApi in) {
             return in;
         }
 
         @Provides
-        ResourceRecordSetApi.Factory provideResourceRecordSetApiFactory(VerisignMDNSResourceRecordSetApi.Factory in) {
+        ResourceRecordSetApi.Factory provideResourceRecordSetApiFactory(VerisignMdnsResourceRecordSetApi.Factory in) {
             return in;
         }
 
         @Provides
         AllProfileResourceRecordSetApi.Factory provideAllProfileResourceRecordSetApiFactory(
-                VerisignMDNSAllProfileResourceRecordSetApi.Factory in) {
+                VerisignMdnsAllProfileResourceRecordSetApi.Factory in) {
             return in;
         }
     }
 
     @dagger.Module(//
-    injects = { VerisignMDNSResourceRecordSetApi.Factory.class }, complete = false, overrides = true, includes = {
+    injects = { VerisignMdnsResourceRecordSetApi.Factory.class }, complete = false, overrides = true, includes = {
             Feign.Defaults.class, XMLCodec.class })
     public static final class FeignModule {
 
