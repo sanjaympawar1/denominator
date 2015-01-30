@@ -27,6 +27,5 @@ dependencies {
   testCompile  project(':denominator-core').sourceSets.test.output
   testCompile 'com.google.guava:guava:14.0.1'
   testCompile 'org.testng:testng:6.8.5'
-  testCompile 'com.google.code.gson:gson:2.2.4'
   testCompile 'com.google.mockwebserver:mockwebserver:20130706'
 }

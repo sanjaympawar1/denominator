@@ -5,7 +5,7 @@ import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
-import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_CNAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 import static denominator.verisignmdns.VerisignMdnsTest.mockAllProfileResourceRecordSetApi;
 import static denominator.verisignmdns.VerisignMdnsTest.rrListCNAMETypesResponse;
@@ -39,7 +39,7 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             ResourceRecordSet<?> actualResult = vrsnAllProfileResourceRecordSetApi.getByNameTypeAndQualifier(
-                    TEST_USER_NAME, VALID_RR_TYPE1, RESOURCE_RECORD_ID);
+                    TEST_USER_NAME, VALID_RR_TYPE_CNAME, RESOURCE_RECORD_ID);
             assertNotNull(actualResult);
 
             String expectedRequest = format(rrListCNAMETypesTemplete, TEST_USER_NAME, TEST_PASSWORD, RESOURCE_RECORD_ID);
@@ -59,14 +59,14 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterateByNameAndType(
-                    VALID_OWNER1, VALID_RR_TYPE1);
+                    VALID_OWNER1, VALID_RR_TYPE_CNAME);
             assertNotNull(actulResult);
 
             ResourceRecordSet<?> rrSet = actulResult.next();
 
             assertNotNull(rrSet);
             assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE1);
+            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
             assertEquals(rrSet.name(), VALID_OWNER1);
 
             Object entry = rrSet.records().get(0);
@@ -96,7 +96,7 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
 
             assertNotNull(rrSet);
             assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE1);
+            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
             assertEquals(rrSet.name(), VALID_OWNER1);
 
             Object entry = rrSet.records().get(0);

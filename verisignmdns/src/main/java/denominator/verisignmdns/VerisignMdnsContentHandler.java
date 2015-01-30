@@ -101,7 +101,7 @@ final class VerisignMdnsContentHandler {
             }
 
             if (qName.endsWith(":rData")) {
-                String[] tempArray = rDataString.split(",");
+                String[] tempArray = rDataString.split(" ");
                 rr.rdata = getArrayList(tempArray);
                 rDataString = "";
             }

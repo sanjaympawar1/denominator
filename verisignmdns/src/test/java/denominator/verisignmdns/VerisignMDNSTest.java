@@ -32,11 +32,12 @@ import feign.codec.ErrorDecoder;
 
 public class VerisignMdnsTest {
     public static final String VALID_TTL1 = "86000";
-    public static final String VALID_RR_TYPE2 = "TXT";
-    public static final String VALID_RR_TYPE1 = "CNAME";
+    public static final String VALID_RR_TYPE_TXT = "TXT";
+    public static final String VALID_RR_TYPE_CNAME = "CNAME";
     public static final String TEST_USER_NAME = "testUser";
     public static final String TEST_PASSWORD = "testPass";
-    public static final String VALID_RR_TYPE3 = "NAPTR";
+    public static final String VALID_RR_TYPE_NAPTR = "NAPTR";
+    public static final String VALID_RR_TYPE_SRV = "SRV";
     public static final String METHODKEY = "testMethodKey";
     public static final String VALID_RDATA1 = "dummy_rdata1";
     public static final String VALID_RDATA2 = "dummy_rdata2";
@@ -47,7 +48,8 @@ public class VerisignMdnsTest {
     public static final String VALID_OWNER1 = "test1." + VALID_ZONE_NAME1;
     public static final String VALID_OWNER2 = "test2." + VALID_ZONE_NAME2;
     public static final String VALID_URL = "https://api.dns-tool.com/dnsa-ws/V2.0/dnsaapi";
-    public static final String VALID_RData_NAPTR = "100 50 \"a\" \"z3950+n2l+n2c\" \"\" cidserver.example.com.";
+    public static final String VALID_RDATA_NAPTR = "100 50 \"a\" \"z3950+n2l+n2c\" \"\" cidserver.example.com.";
+    public static final String VALID_RDATA_SRV = "10 60 5060 bigbox.example.com.";
 
     static final String TEMPLATE_HEAD = 
             "<?xml version='1.0' encoding='UTF-8'?>"
@@ -71,7 +73,7 @@ public class VerisignMdnsTest {
                     + "<urn2:domainName>" + VALID_ZONE_NAME1 + "</urn2:domainName>"
                     + "<urn2:resourceRecord allowanyIP='false'>" 
                         + "<urn2:owner>" + VALID_OWNER1 + "</urn2:owner>"
-                        + "<urn2:type>" + VALID_RR_TYPE1 + "</urn2:type>" 
+                        + "<urn2:type>" + VALID_RR_TYPE_CNAME + "</urn2:type>" 
                         + "<urn2:ttl>" + VALID_TTL1 + "</urn2:ttl>"
                         + "<urn2:rData>" + VALID_RDATA1 + "</urn2:rData>" 
                     + "</urn2:resourceRecord>"
@@ -135,7 +137,7 @@ public class VerisignMdnsTest {
             TEMPLATE_HEAD
                 + "<ns3:getResourceRecordList xmlns=\"urn:com:verisign:dnsa:auth:schema:1\" xmlns:ns2=\"urn:com:verisign:dnsa:messaging:schema:1\" xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
                     + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>" 
-                    + "<ns3:resourceRecordType>" + VALID_RR_TYPE1 + "</ns3:resourceRecordType>" 
+                    + "<ns3:resourceRecordType>" + VALID_RR_TYPE_CNAME + "</ns3:resourceRecordType>" 
                 + "</ns3:getResourceRecordList>" 
             + TEMPLATE_TAIL;
 
@@ -149,16 +151,16 @@ public class VerisignMdnsTest {
                         + "<ns2:resourceRecord>"
                             + "<ns2:resourceRecordId>19076156</ns2:resourceRecordId>"
                             + "<ns2:owner>" + VALID_OWNER1 + "</ns2:owner>"
-                            + "<ns2:type>" + VALID_RR_TYPE3 + "</ns2:type>"
+                            + "<ns2:type>" + VALID_RR_TYPE_NAPTR + "</ns2:type>"
                             + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
-                            + "<ns2:rData>" + VALID_RData_NAPTR + "</ns2:rData>"
+                            + "<ns2:rData>" + VALID_RDATA_NAPTR + "</ns2:rData>"
                             + "</ns2:resourceRecord>"
                         + "<ns2:resourceRecord>"
                             + "<ns2:resourceRecordId>19049261</ns2:resourceRecordId>"
                             + "<ns2:owner>" + VALID_OWNER2 + "</ns2:owner>"
-                            + "<ns2:type>" + VALID_RR_TYPE3 + "</ns2:type>"
+                            + "<ns2:type>" + VALID_RR_TYPE_NAPTR + "</ns2:type>"
                             + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
-                            + "<ns2:rData>" + VALID_RData_NAPTR + "</ns2:rData>"
+                            + "<ns2:rData>" + VALID_RDATA_NAPTR + "</ns2:rData>"
                         + "</ns2:resourceRecord>"
                    + "</ns2:getResourceRecordListRes>" 
                + "</S:Body>" 
@@ -256,14 +258,14 @@ public class VerisignMdnsTest {
                         + "<ns2:resourceRecord>"
                             + "<ns2:resourceRecordId>19076156</ns2:resourceRecordId>"
                             + "<ns2:owner>" + VALID_OWNER1 + "</ns2:owner>"
-                            + "<ns2:type>" + VALID_RR_TYPE1 + "</ns2:type>"
+                            + "<ns2:type>" + VALID_RR_TYPE_CNAME + "</ns2:type>"
                             + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
                             + "<ns2:rData>" + VALID_RDATA1 + "</ns2:rData>"
                         + "</ns2:resourceRecord>"
                         + "<ns2:resourceRecord>"
                             + "<ns2:resourceRecordId>19049261</ns2:resourceRecordId>"
                             + "<ns2:owner>" + VALID_OWNER2 + "</ns2:owner>"
-                            + "<ns2:type>" + VALID_RR_TYPE2 + "</ns2:type>"
+                            + "<ns2:type>" + VALID_RR_TYPE_TXT + "</ns2:type>"
                             + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
                             + "<ns2:rData>" + VALID_RDATA2 + "</ns2:rData>"
                         + "</ns2:resourceRecord>"
@@ -365,13 +367,23 @@ public class VerisignMdnsTest {
         return profileToRecordTypes;
     }
 
-    public static Record mockRecord() {
-        List<String> rData = new ArrayList<String>();
-        rData.add(VALID_RData_NAPTR);
+    public static Record mockNaptrRecord() {
+        List<String> rData = new ArrayList<String>(Arrays.asList(VALID_RDATA_NAPTR.split(" ")));
         Record record = new Record();
         record.id = VALID_TTL1;
         record.name = VALID_OWNER1;
-        record.type = VALID_RR_TYPE3;
+        record.type = VALID_RR_TYPE_NAPTR;
+        record.ttl = Integer.parseInt(VALID_TTL1);
+        record.rdata = rData;
+        return record;
+    }
+    
+    public static Record mockSrvRecord() {
+        List<String> rData = new ArrayList<String>(Arrays.asList(VALID_RDATA_SRV.split(" ")));
+        Record record = new Record();
+        record.id = VALID_TTL1;
+        record.name = VALID_OWNER1;
+        record.type = VALID_RR_TYPE_SRV;
         record.ttl = Integer.parseInt(VALID_TTL1);
         record.rdata = rData;
         return record;
@@ -383,7 +395,7 @@ public class VerisignMdnsTest {
         Record record = new Record();
         record.id = VALID_TTL1;
         record.name = VALID_OWNER1;
-        record.type = VALID_RR_TYPE1;
+        record.type = VALID_RR_TYPE_CNAME;
         record.ttl = Integer.parseInt(VALID_TTL1);
         record.rdata = rData;
         return record;

@@ -5,7 +5,9 @@ import denominator.BasicProvider;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Singleton;
 
@@ -18,7 +20,6 @@ import denominator.ZoneApi;
 import denominator.config.GeoUnsupported;
 import denominator.config.NothingToClose;
 import denominator.config.WeightedUnsupported;
-
 import denominator.verisignmdns.VerisignMdnsContentHandler.RecordListHandler;
 import denominator.verisignmdns.VerisignMdnsContentHandler.ZoneListHandler;
 import denominator.verisignmdns.VerisignMdnsErrorDecoder.VrsnMdnsError;
@@ -46,6 +47,13 @@ public class VerisignMdnsProvider extends BasicProvider {
     @Override
     public String url() {
         return url;
+    }
+
+    @Override
+    public Set<String> basicRecordTypes() {
+        Set<String> types = new LinkedHashSet<String>();
+        types.addAll(Arrays.asList("A", "AAAA", "CNAME", "MX", "NAPTR", "PTR", "SRV", "TXT"));
+        return types;
     }
 
     @Override

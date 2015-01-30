@@ -1,7 +1,8 @@
 package denominator.verisignmdns;
 
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
-import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE3;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_NAPTR;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_SRV;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -13,32 +14,47 @@ import java.util.List;
 import java.util.Set;
 
 
+
 import org.testng.annotations.Test;
 
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.NAPTRData;
+import denominator.model.rdata.SRVData;
 import denominator.verisignmdns.VerisignMdnsContentConversionHelper;
 import denominator.verisignmdns.VerisignMdns.Record;
 
 public class VerisignMdnsContentConversionHelperTest {
 
     @Test
-    public void convertMDNSRecordToDenominator() throws IOException {
-        Record mDNSRecord = VerisignMdnsTest.mockRecord();
+    public void convertMdnsNaptrRecordToDenominator() throws IOException {
+        Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
         ResourceRecordSet<?> rrs = VerisignMdnsContentConversionHelper.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-        assertEquals(rrs.type(), VALID_RR_TYPE3);
+        assertEquals(rrs.type(), VALID_RR_TYPE_NAPTR);
         assertEquals(rrs.name(), VALID_OWNER1);
         Object entry = rrs.records().get(0);
         assertTrue(entry instanceof NAPTRData);
     }
 
     @Test
+    public void convertMdnsSrvtrRecordToDenominator() throws IOException {
+        Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
+        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionHelper.convertMDNSRecordToResourceRecordSet(mDNSRecord);
+
+        assertNotNull(rrs);
+        assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+        assertEquals(rrs.type(), VALID_RR_TYPE_SRV);
+        assertEquals(rrs.name(), VALID_OWNER1);
+        Object entry = rrs.records().get(0);
+        assertTrue(entry instanceof SRVData);
+    }
+
+    @Test
     public void getResourceRecordSet() {
         List<Record> mDNSRecordList = new ArrayList<Record>();
-        mDNSRecordList.add(VerisignMdnsTest.mockRecord());
+        mDNSRecordList.add(VerisignMdnsTest.mockNaptrRecord());
         Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionHelper
                 .getResourceRecordSet(mDNSRecordList);
 

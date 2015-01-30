@@ -4,7 +4,7 @@ import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
-import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_CNAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
 import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordResponse;
@@ -88,7 +88,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
 
             assertNotNull(rrSet);
             assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE1);
+            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
             assertEquals(rrSet.name(), VALID_OWNER1);
 
             Object entry = rrSet.records().get(0);
@@ -113,11 +113,11 @@ public class VerisignMdnsResourceRecordSetApiTest {
         server.play();
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
-            ResourceRecordSet<?> rrSet = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE1);
+            ResourceRecordSet<?> rrSet = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE_CNAME);
 
             assertNotNull(rrSet);
             assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE1);
+            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
             assertEquals(rrSet.name(), VALID_OWNER1);
 
             Object entry = rrSet.records().get(0);
@@ -127,7 +127,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
             assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);
 
             String expectedRequest = format(rrByNameAndTypeTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE1, VALID_OWNER1);
+                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
         } finally {
             server.shutdown();
@@ -141,11 +141,11 @@ public class VerisignMdnsResourceRecordSetApiTest {
         server.play();
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
-            ResourceRecordSet<?> actualResult = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE1);
+            ResourceRecordSet<?> actualResult = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE_CNAME);
 
             assertNotNull(actualResult);
             assertEquals(actualResult.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(actualResult.type(), VALID_RR_TYPE1);
+            assertEquals(actualResult.type(), VALID_RR_TYPE_CNAME);
             assertEquals(actualResult.name(), VALID_OWNER1);
 
             Object entry = actualResult.records().get(0);
@@ -154,7 +154,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
             CNAMEData cnameData = (CNAMEData) entry;
             assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);
             String expectedRequest = format(rrByNameAndTypeTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE1, VALID_OWNER1);
+                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
         } finally {
             server.shutdown();
@@ -169,11 +169,11 @@ public class VerisignMdnsResourceRecordSetApiTest {
         server.play();
         try {
             ResourceRecordSetApi apiforDelete = mockResourceRecordSetApi(server.getPort());
-            apiforDelete.deleteByNameAndType(VALID_OWNER1, VALID_RR_TYPE1);
+            apiforDelete.deleteByNameAndType(VALID_OWNER1, VALID_RR_TYPE_CNAME);
             String expectedRequest1 = format(rrByNameAndTypeTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE1, VALID_OWNER1);
+                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
             String expectedRequest2 = format(rrDeleteTemplete, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE1, VALID_OWNER1);
+                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
 
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest2);
@@ -195,7 +195,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
             api.put(inputRecordSet);
 
             String expectedRequest = format(createRequestARecordTemplete, TEST_USER_NAME, TEST_PASSWORD,
-                    VALID_ZONE_NAME1, VALID_RR_TYPE1, VALID_OWNER1);
+                    VALID_ZONE_NAME1, VALID_RR_TYPE_CNAME, VALID_OWNER1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
         } finally {
             server.shutdown();
