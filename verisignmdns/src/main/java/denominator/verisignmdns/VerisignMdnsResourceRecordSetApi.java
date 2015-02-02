@@ -18,7 +18,7 @@ import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-public final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
+final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     private final String domainName;
     private final VerisignMdns api;
 

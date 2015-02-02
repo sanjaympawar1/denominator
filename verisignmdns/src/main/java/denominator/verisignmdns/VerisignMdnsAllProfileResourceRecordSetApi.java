@@ -18,7 +18,7 @@ import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-public class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
+final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
     private final String domainName;
     private final VerisignMdns api;
 
@@ -96,7 +96,6 @@ public class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.A
         @Inject
         Factory(Provider<Credentials> credentialsProvider, denominator.Provider provider, VerisignMdns api) {
             this.records = Map.class.cast(records);
-
             this.api = api;
         }
 
