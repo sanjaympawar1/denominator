@@ -109,7 +109,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         StringBuilder sb = new StringBuilder();
         if (rrset != null) {
             if (rrset.type().equals("NAPTR")) {
-                sb.append(VerisignMdnsRequestHelper.getNAPTRData(rrset));
+                sb.append(VerisignMdnsRequestFunctions.getNAPTRData(rrset));
             } else {
                 for (Object obj : rrset.records()) {
                     if (sb.length() > 0) {
