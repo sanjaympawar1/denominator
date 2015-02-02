@@ -44,12 +44,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        try {
-            throw new VerisignMdnsException("Method Not Implemented", -1);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override

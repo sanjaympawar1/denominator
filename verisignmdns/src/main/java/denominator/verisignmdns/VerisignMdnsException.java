@@ -13,10 +13,7 @@ final class VerisignMdnsException extends FeignException {
     }
 
     /**
-     * Error code values -1 == > Method Not Implemented, this is internal error
-     * of Verisign MDNS Provider
-     * 
-     * @see denominator.verisignmdns.VrsnMDNSErrorDecoder for MDNS response
+     * @see denominator.verisignmdns.VerisignMdnsErrorDecoder for MDNS response
      * error messages and error codes
      */
     public int code() {

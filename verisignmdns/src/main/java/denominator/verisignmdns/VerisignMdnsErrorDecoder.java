@@ -41,7 +41,7 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
         try {
             // in case of error parsing, we can access the original contents.
             response = bufferResponse(response);
-            VrsnMdnsError error = VrsnMdnsError.class.cast(decoder.decode(response, VrsnMdnsError.class));
+            VerisignMdnsError error = VerisignMdnsError.class.cast(decoder.decode(response, VerisignMdnsError.class));
             if (error == null)
                 return FeignException.errorStatus(methodKey, response);
             String message = format("%s failed", methodKey);
@@ -58,9 +58,9 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
         }
     }
 
-    static class VrsnMdnsError extends DefaultHandler implements ContentHandlerWithResult<VrsnMdnsError> {
+    static class VerisignMdnsError extends DefaultHandler implements ContentHandlerWithResult<VerisignMdnsError> {
         @Inject
-        VrsnMdnsError() {
+        VerisignMdnsError() {
         }
 
         private StringBuilder currentText = new StringBuilder();
@@ -68,7 +68,7 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
         private String description;
 
         @Override
-        public VrsnMdnsError result() {
+        public VerisignMdnsError result() {
             return (code == -1 && description == null) ? null : this;
         }
 
