@@ -9,10 +9,8 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import denominator.AllProfileResourceRecordSetApi;
-import denominator.Credentials;
 import denominator.common.Filter;
 import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
@@ -27,10 +25,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         this.api = api;
     }
 
-    /**
-     * Returns Sorted Set of Resource Record Set to to keep behavior similar to
-     * MDNS web UI.
-     */
+
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
         List<Record> recordList = api.getResourceRecordsList(domainName);
@@ -39,10 +34,12 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
+        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
     protected void put(Filter<ResourceRecordSet<?>> valid, ResourceRecordSet<?> rrset) {
+        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
@@ -62,10 +59,6 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         return result;
     }
 
-    /**
-     * NOTE- for MDNS get only required ResourceRecordId ie. qualifier.
-     * Parameters name and type are ignored.
-     */
     @Override
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
         ResourceRecordSet<?> result = null;
@@ -94,7 +87,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
-        Factory(Provider<Credentials> credentialsProvider, denominator.Provider provider, VerisignMdns api) {
+        Factory(denominator.Provider provider, VerisignMdns api) {
             this.records = Map.class.cast(records);
             this.api = api;
         }

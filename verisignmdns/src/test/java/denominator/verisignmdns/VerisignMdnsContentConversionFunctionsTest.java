@@ -39,7 +39,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     }
 
     @Test
-    public void convertMdnsSrvtrRecordToDenominator() throws IOException {
+    public void convertMdnsSrvRecordToDenominator() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
         ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 

@@ -9,9 +9,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
-import denominator.Credentials;
 import denominator.ResourceRecordSetApi;
 import denominator.common.Util;
 import denominator.model.ResourceRecordSet;
@@ -85,46 +83,35 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     @Override
     public void deleteByNameAndType(String name, String type) {
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        if (recordList != null && !recordList.isEmpty()) {
-            // delete all records in recordList
-            for (Record record : recordList) {
-                api.deleteRecourceRecord(domainName, record.id);
-            }
-        } else {
-            throw new RuntimeException("deleteByNameAndType() failled to delete record for domain :" + domainName
-                    + " type :" + type + " No Record Found");
+        for (Record record : recordList) {
+            api.deleteRecourceRecord(domainName, record.id);
         }
     }
 
     public static final class Factory implements denominator.ResourceRecordSetApi.Factory {
         private Map<Zone, SortedSet<ResourceRecordSet<?>>> records;
-        private String domainName;
         private VerisignMdns api;
-        private Provider<Credentials> credentialsProvider;
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
-        Factory(Provider<Credentials> credentialsProvider, denominator.Provider provider, VerisignMdns api) {
+        Factory(denominator.Provider provider, VerisignMdns api) {
             this.records = Map.class.cast(records);
-            String url = provider.url();
             this.api = api;
-            this.credentialsProvider = credentialsProvider;
         }
 
         @Override
         public ResourceRecordSetApi create(String idOrName) {
-            Zone zone = Zone.create(idOrName);
             return new VerisignMdnsResourceRecordSetApi(idOrName, api);
         }
     }
 
-    private String getRDataStringFromRRSet(ResourceRecordSet rRSet) {
+    private String getRDataStringFromRRSet(ResourceRecordSet rrset) {
         StringBuilder sb = new StringBuilder();
-        if (rRSet != null && rRSet.records() != null) {
-            if (rRSet.type().equals("NAPTR")) {
-                sb.append(VerisignMdnsRequestHelper.getNAPTRData(rRSet));
+        if (rrset != null) {
+            if (rrset.type().equals("NAPTR")) {
+                sb.append(VerisignMdnsRequestHelper.getNAPTRData(rrset));
             } else {
-                for (Object obj : rRSet.records()) {
+                for (Object obj : rrset.records()) {
                     if (sb.length() > 0) {
                         sb.append(",");
                     }
@@ -139,3 +126,4 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         return sb.toString();
     }
 }
+

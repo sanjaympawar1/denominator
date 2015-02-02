@@ -95,7 +95,6 @@ final class VerisignMdnsContentHandler {
             }
             if (processingRR && qName.endsWith(":rData")) {
                 rr.rdata = currentText.toString();
-                
             }
             currentText = new StringBuilder();
         }
@@ -103,7 +102,6 @@ final class VerisignMdnsContentHandler {
         /**
          * This method is to ensure all space characters are accounted for while
          * processing rData
-         * 
          */
         @Override
         public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
