@@ -43,7 +43,6 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             assertNotNull(actualResult);
 
             String expectedRequest = format(rrListCNAMETypesTemplete, TEST_USER_NAME, TEST_PASSWORD, RESOURCE_RECORD_ID);
-
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
         } finally {
             server.shutdown();
