@@ -20,15 +20,15 @@ import org.testng.annotations.Test;
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.NAPTRData;
 import denominator.model.rdata.SRVData;
-import denominator.verisignmdns.VerisignMdnsContentConversionHelper;
+import denominator.verisignmdns.VerisignMdnsContentConversionFunctions;
 import denominator.verisignmdns.VerisignMdns.Record;
 
-public class VerisignMdnsContentConversionHelperTest {
+public class VerisignMdnsContentConversionFunctionsTest {
 
     @Test
     public void convertMdnsNaptrRecordToDenominator() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionHelper.convertMDNSRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -41,7 +41,7 @@ public class VerisignMdnsContentConversionHelperTest {
     @Test
     public void convertMdnsSrvtrRecordToDenominator() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionHelper.convertMDNSRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -55,7 +55,7 @@ public class VerisignMdnsContentConversionHelperTest {
     public void getResourceRecordSet() {
         List<Record> mDNSRecordList = new ArrayList<Record>();
         mDNSRecordList.add(VerisignMdnsTest.mockNaptrRecord());
-        Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionHelper
+        Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionFunctions
                 .getResourceRecordSet(mDNSRecordList);
 
         assertNotNull(actualResult);

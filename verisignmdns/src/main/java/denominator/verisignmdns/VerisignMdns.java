@@ -67,7 +67,7 @@ interface VerisignMdns {
         String name;
         String type;
         int ttl;
-        List<String> rdata;
+        String rdata;
     }
 }
 

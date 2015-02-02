@@ -29,7 +29,6 @@ final class VerisignMdnsContentHandler {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attrs) {
-
             if (qName != null && qName.endsWith(":domainName")) {
                 domainElementFound = true;
             }
@@ -57,10 +56,9 @@ final class VerisignMdnsContentHandler {
         RecordListHandler() {
         }
 
-        private Record rr = new Record();
+        private Record rr;
         private boolean processingRR = false;
-        private String currentElementName = "";
-        private String rDataString = "";
+        private StringBuilder currentText;
 
         @Override
         public List<Record> result() {
@@ -69,43 +67,37 @@ final class VerisignMdnsContentHandler {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attrs) {
-
             if (qName.endsWith(":resourceRecord")) {
                 rr = new Record();
                 processingRR = true;
-                currentElementName = ":resourceRecord";
-            }
-            if (processingRR && qName.endsWith(":resourceRecordId")) {
-                currentElementName = ":resourceRecordId";
-            }
-            if (processingRR && qName.endsWith(":owner")) {
-                currentElementName = ":owner";
-            }
-            if (processingRR && qName.endsWith(":type")) {
-                currentElementName = ":type";
-            }
-            if (processingRR && qName.endsWith(":ttl")) {
-                currentElementName = ":ttl";
-            }
-            if (processingRR && qName.endsWith(":rData")) {
-                currentElementName = ":rData";
+                currentText = new StringBuilder();
             }
         }
 
         @Override
         public void endElement(String uri, String name, String qName) {
-
             if (qName.endsWith(":resourceRecord")) {
                 rrs.add(rr);
                 processingRR = false;
+                currentText = null;
             }
-
-            if (qName.endsWith(":rData")) {
-                String[] tempArray = rDataString.split(" ");
-                rr.rdata = getArrayList(tempArray);
-                rDataString = "";
+            if (processingRR && qName.endsWith(":resourceRecordId")) {
+                rr.id = currentText.toString().trim();
             }
-            currentElementName = "";
+            if (processingRR && qName.endsWith(":owner")) {
+                rr.name = currentText.toString().trim();
+            }
+            if (processingRR && qName.endsWith(":type")) {
+                rr.type = currentText.toString().trim();
+            }
+            if (processingRR && qName.endsWith(":ttl")) {
+                rr.ttl = Integer.parseInt(currentText.toString());
+            }
+            if (processingRR && qName.endsWith(":rData")) {
+                rr.rdata = currentText.toString();
+                
+            }
+            currentText = new StringBuilder();
         }
 
         /**
@@ -115,48 +107,16 @@ final class VerisignMdnsContentHandler {
          */
         @Override
         public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-            if (currentElementName.equals(":rData")) {
                 String tempStr = new String(ch, start, length);
-                rDataString += tempStr;
-            }
+                currentText.append(tempStr);
         }
 
         @Override
         public void characters(char ch[], int start, int length) throws SAXException {
             if (processingRR && length > 0) {
-                if (currentElementName.equals(":resourceRecordId")) {
-                    rr.id = new String(ch, start, length);
-                }
-                if (currentElementName.equals(":owner")) {
-                    rr.name = new String(ch, start, length);
-                }
-                if (currentElementName.equals(":type")) {
-                    rr.type = new String(ch, start, length);
-                }
-                if (currentElementName.equals(":ttl")) {
-                    try {
-                        String temp = new String(ch, start, length);
-                        rr.ttl = Integer.parseInt(temp);
-                    } catch (Exception ex) {
-                        // DO NOTHING
-                    }
-                }
-                if (currentElementName.equals(":rData")) {
-                    String tempStr = new String(ch, start, length);
-                    rDataString += tempStr;
-                }
+                   currentText.append(new String(ch, start, length));
             }
         }
-    }
-
-    private static ArrayList<String> getArrayList(String[] input) {
-        ArrayList<String> result = new ArrayList<String>();
-        if (input != null) {
-            for (int i = 0; i < input.length; i++) {
-                result.add(input[i]);
-            }
-        }
-        return result;
     }
 }
 
