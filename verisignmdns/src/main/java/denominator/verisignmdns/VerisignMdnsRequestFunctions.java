@@ -6,10 +6,6 @@ import denominator.model.ResourceRecordSet;
 
 final class VerisignMdnsRequestFunctions {
 
-    /**
-     * This method parses ResourceRecordSet.record data to construct rData
-     * string
-     */
     static String getNAPTRData(ResourceRecordSet rrset) {
         StringBuilder sb = new StringBuilder();
         if (rrset != null) {

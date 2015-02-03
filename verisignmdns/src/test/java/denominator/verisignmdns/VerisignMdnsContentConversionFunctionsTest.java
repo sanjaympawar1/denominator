@@ -26,7 +26,7 @@ import denominator.verisignmdns.VerisignMdns.Record;
 public class VerisignMdnsContentConversionFunctionsTest {
 
     @Test
-    public void convertMdnsNaptrRecordToDenominator() throws IOException {
+    public void convertMdnsNaptrRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
         ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 
@@ -39,7 +39,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     }
 
     @Test
-    public void convertMdnsSrvRecordToDenominator() throws IOException {
+    public void convertMdnsSrvRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
         ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
 

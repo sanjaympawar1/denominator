@@ -114,12 +114,6 @@ public class VerisignMdnsProvider extends BasicProvider {
     complete = false, addsTo = Feign.Defaults.class//
     )
     static final class XMLCodec {
-
-        @Provides
-        Encoder formEncoder() {
-            return new VerisignMdnsFormEncoder();
-        }
-
         @Provides
         Decoder saxDecoder() {
             return SAXDecoder.builder()//
