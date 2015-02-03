@@ -89,13 +89,11 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     }
 
     public static final class Factory implements denominator.ResourceRecordSetApi.Factory {
-        private Map<Zone, SortedSet<ResourceRecordSet<?>>> records;
         private VerisignMdns api;
 
         @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
-        Factory(denominator.Provider provider, VerisignMdns api) {
-            this.records = Map.class.cast(records);
+        Factory(VerisignMdns api) {
             this.api = api;
         }
 
