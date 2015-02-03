@@ -115,6 +115,11 @@ public class VerisignMdnsProvider extends BasicProvider {
     )
     static final class XMLCodec {
         @Provides
+        Encoder formEncoder() {
+            return new VerisignMdnsFormEncoder();
+        }
+        
+        @Provides
         Decoder saxDecoder() {
             return SAXDecoder.builder()//
                     .registerContentHandler(ZoneListHandler.class)//
