@@ -4,16 +4,13 @@ import static denominator.common.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import javax.inject.Inject;
 
 import denominator.AllProfileResourceRecordSetApi;
 import denominator.common.Filter;
 import denominator.model.ResourceRecordSet;
-import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 
 final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.AllProfileResourceRecordSetApi {
