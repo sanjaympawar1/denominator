@@ -10,10 +10,10 @@ final class VerisignMdnsRequestFunctions {
      * This method parses ResourceRecordSet.record data to construct rData
      * string
      */
-    static String getNAPTRData(ResourceRecordSet rRSet) {
+    static String getNAPTRData(ResourceRecordSet rrset) {
         StringBuilder sb = new StringBuilder();
-        if (rRSet != null) {
-            for (Object obj : rRSet.records()) {
+        if (rrset != null) {
+            for (Object obj : rrset.records()) {
                 Map<String, ?> attributeMap = (Map<String, String>) obj;
                 if (sb.length() > 0) {
                     sb.append(",");

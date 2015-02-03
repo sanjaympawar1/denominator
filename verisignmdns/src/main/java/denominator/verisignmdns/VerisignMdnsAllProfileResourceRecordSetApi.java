@@ -63,9 +63,9 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordByQualifier(qualifier);
-        Set<ResourceRecordSet<?>> rrSet = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList);
-        if (!rrSet.isEmpty()) {
-            result = rrSet.iterator().next();
+        Set<ResourceRecordSet<?>> rrset = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList);
+        if (!rrset.isEmpty()) {
+            result = rrset.iterator().next();
         }
         return result;
     }
@@ -96,3 +96,4 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         }
     }
 }
+
