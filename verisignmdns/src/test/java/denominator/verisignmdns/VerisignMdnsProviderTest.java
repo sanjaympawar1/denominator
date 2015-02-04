@@ -15,8 +15,8 @@ public class VerisignMdnsProviderTest {
 
     @Test
     public void credentialTypeToParameterNames() {
-        VerisignMdnsProvider vrsnDNSProvider = new VerisignMdnsProvider();
-        Map<String, Collection<String>> actualResult = vrsnDNSProvider.credentialTypeToParameterNames();
+        VerisignMdnsProvider verisignMdnsProvider = new VerisignMdnsProvider();
+        Map<String, Collection<String>> actualResult = verisignMdnsProvider.credentialTypeToParameterNames();
         assertNotNull(actualResult);
         Map<String, Collection<String>> expectedResult = VerisignMdnsTest.MockcredentialTypeToParameterNamesResponse();
         assertNotNull(expectedResult);
@@ -25,8 +25,8 @@ public class VerisignMdnsProviderTest {
 
     @Test
     public void profileToRecordTypes() {
-        VerisignMdnsProvider vrsnDNSProvider = new VerisignMdnsProvider();
-        Map<String, Collection<String>> actualResult = vrsnDNSProvider.profileToRecordTypes();
+        VerisignMdnsProvider verisignMdnsProvider = new VerisignMdnsProvider();
+        Map<String, Collection<String>> actualResult = verisignMdnsProvider.profileToRecordTypes();
         assertNotNull(actualResult);
         Map<String, Collection<String>> expectedResult = VerisignMdnsTest.mockProfileToRecordTypesResponse();
         assertNotNull(actualResult);
@@ -35,8 +35,8 @@ public class VerisignMdnsProviderTest {
 
     @Test
     public void url() {
-        VerisignMdnsProvider vrsnDNSProvider = new VerisignMdnsProvider();
-        String actualResult = vrsnDNSProvider.url();
+        VerisignMdnsProvider verisignMdnsProvider = new VerisignMdnsProvider();
+        String actualResult = verisignMdnsProvider.url();
         assertNotNull(actualResult);
         assertEquals(actualResult, VALID_URL);
     }

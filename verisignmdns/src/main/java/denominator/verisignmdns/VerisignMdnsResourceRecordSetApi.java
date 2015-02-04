@@ -50,9 +50,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         ResourceRecordSet<?> result = null;
         List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
         Set<ResourceRecordSet<?>> tempSet = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList);
-        if (tempSet != null && tempSet.size() > 0) {
-            result = tempSet.iterator().next();
-        }
+        result = tempSet.iterator().next();
         return result;
     }
 

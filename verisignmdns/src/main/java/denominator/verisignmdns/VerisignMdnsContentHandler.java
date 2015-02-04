@@ -57,7 +57,7 @@ final class VerisignMdnsContentHandler {
         }
 
         private Record rr;
-        private boolean processingRR = false;
+        private boolean inResourceRecordSet = false;
         private StringBuilder currentText;
 
         @Override
@@ -69,7 +69,7 @@ final class VerisignMdnsContentHandler {
         public void startElement(String uri, String localName, String qName, Attributes attrs) {
             if (qName.endsWith(":resourceRecord")) {
                 rr = new Record();
-                processingRR = true;
+                inResourceRecordSet = true;
                 currentText = new StringBuilder();
             }
         }
@@ -78,22 +78,22 @@ final class VerisignMdnsContentHandler {
         public void endElement(String uri, String name, String qName) {
             if (qName.endsWith(":resourceRecord")) {
                 rrs.add(rr);
-                processingRR = false;
+                inResourceRecordSet = false;
                 currentText = null;
             }
-            if (processingRR && qName.endsWith(":resourceRecordId")) {
+            if (inResourceRecordSet && qName.endsWith(":resourceRecordId")) {
                 rr.id = currentText.toString().trim();
             }
-            if (processingRR && qName.endsWith(":owner")) {
+            if (inResourceRecordSet && qName.endsWith(":owner")) {
                 rr.name = currentText.toString().trim();
             }
-            if (processingRR && qName.endsWith(":type")) {
+            if (inResourceRecordSet && qName.endsWith(":type")) {
                 rr.type = currentText.toString().trim();
             }
-            if (processingRR && qName.endsWith(":ttl")) {
+            if (inResourceRecordSet && qName.endsWith(":ttl")) {
                 rr.ttl = Integer.parseInt(currentText.toString());
             }
-            if (processingRR && qName.endsWith(":rData")) {
+            if (inResourceRecordSet && qName.endsWith(":rData")) {
                 rr.rdata = currentText.toString();
             }
             currentText = new StringBuilder();
@@ -111,7 +111,7 @@ final class VerisignMdnsContentHandler {
 
         @Override
         public void characters(char ch[], int start, int length) throws SAXException {
-            if (processingRR && length > 0) {
+            if (inResourceRecordSet && length > 0) {
                    currentText.append(new String(ch, start, length));
             }
         }

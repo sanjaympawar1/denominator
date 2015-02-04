@@ -61,14 +61,14 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
                     VALID_OWNER1, VALID_RR_TYPE_CNAME);
             assertNotNull(actulResult);
 
-            ResourceRecordSet<?> rrSet = actulResult.next();
+            ResourceRecordSet<?> rrs = actulResult.next();
 
-            assertNotNull(rrSet);
-            assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
-            assertEquals(rrSet.name(), VALID_OWNER1);
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
 
-            Object entry = rrSet.records().get(0);
+            Object entry = rrs.records().get(0);
 
             assertTrue(entry instanceof CNAMEData);
             CNAMEData cnameData = (CNAMEData) entry;
@@ -91,14 +91,14 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterator();
             assertNotNull(actulResult);
 
-            ResourceRecordSet<?> rrSet = actulResult.next();
+            ResourceRecordSet<?> rrs = actulResult.next();
 
-            assertNotNull(rrSet);
-            assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
-            assertEquals(rrSet.name(), VALID_OWNER1);
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
 
-            Object entry = rrSet.records().get(0);
+            Object entry = rrs.records().get(0);
 
             assertTrue(entry instanceof CNAMEData);
             CNAMEData cnameData = (CNAMEData) entry;

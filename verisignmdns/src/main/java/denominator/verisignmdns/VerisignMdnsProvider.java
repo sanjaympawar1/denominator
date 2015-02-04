@@ -118,7 +118,7 @@ public class VerisignMdnsProvider extends BasicProvider {
         Encoder formEncoder() {
             return new VerisignMdnsFormEncoder();
         }
-        
+
         @Provides
         Decoder saxDecoder() {
             return SAXDecoder.builder()//

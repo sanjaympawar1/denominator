@@ -20,8 +20,8 @@ public class VerisignMdnsRequestFunctionsTest {
     @Test
     public void getNAPTRData() throws IOException {
         String inptNAPTRDataString = "100 50 'a' 'z3950+n2l+n2c' '' cidserver.example.com.";
-        ResourceRecordSet rrSet = getResourceRecordSet(inptNAPTRDataString);
-        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrSet);
+        ResourceRecordSet rrs = getResourceRecordSet(inptNAPTRDataString);
+        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrs);
         assertNotNull(actualNAPTRData);
         System.out.println("NAPTR actual data :" + actualNAPTRData);
         assertEquals(actualNAPTRData, VALID_RDATA_NAPTR);
@@ -30,8 +30,8 @@ public class VerisignMdnsRequestFunctionsTest {
     @Test
     public void getNAPTRDataInputNoQuotes() throws IOException {
         String inptNAPTRDataString = "100 50 a z3950+n2l+n2c '' cidserver.example.com.";
-        ResourceRecordSet rrSet = getResourceRecordSet(inptNAPTRDataString);
-        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrSet);
+        ResourceRecordSet rrs = getResourceRecordSet(inptNAPTRDataString);
+        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrs);
         assertNotNull(actualNAPTRData);
         System.out.println("NAPTR actual data :" + actualNAPTRData);
         assertEquals(actualNAPTRData, VALID_RDATA_NAPTR);
@@ -40,8 +40,8 @@ public class VerisignMdnsRequestFunctionsTest {
     @Test
     public void getNAPTRDataInputDoubleQuotes() throws IOException {
         String inptNAPTRDataString = "100 50 \"a\" \"z3950+n2l+n2c\" \"\" cidserver.example.com.";
-        ResourceRecordSet rrSet = getResourceRecordSet(inptNAPTRDataString);
-        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrSet);
+        ResourceRecordSet rrs = getResourceRecordSet(inptNAPTRDataString);
+        String actualNAPTRData = VerisignMdnsRequestFunctions.getNAPTRData(rrs);
         assertNotNull(actualNAPTRData);
         System.out.println("NAPTR actual data :" + actualNAPTRData);
         assertEquals(actualNAPTRData, VALID_RDATA_NAPTR);

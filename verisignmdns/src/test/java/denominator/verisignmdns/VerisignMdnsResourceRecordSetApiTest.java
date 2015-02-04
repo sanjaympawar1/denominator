@@ -76,12 +76,12 @@ public class VerisignMdnsResourceRecordSetApiTest {
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
             Iterator<ResourceRecordSet<?>> iter = api.iterator();
-            ResourceRecordSet<?> rrSet = iter.next();
-            assertNotNull(rrSet);
-            assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
-            assertEquals(rrSet.name(), VALID_OWNER1);
-            Object entry = rrSet.records().get(0);
+            ResourceRecordSet<?> rrs = iter.next();
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
+            Object entry = rrs.records().get(0);
             assertTrue(entry instanceof CNAMEData);
             CNAMEData cnameData = (CNAMEData) entry;
             assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);
@@ -101,12 +101,12 @@ public class VerisignMdnsResourceRecordSetApiTest {
         server.play();
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
-            ResourceRecordSet<?> rrSet = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE_CNAME);
-            assertNotNull(rrSet);
-            assertEquals(rrSet.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
-            assertEquals(rrSet.type(), VALID_RR_TYPE_CNAME);
-            assertEquals(rrSet.name(), VALID_OWNER1);
-            Object entry = rrSet.records().get(0);
+            ResourceRecordSet<?> rrs = api.getByNameAndType(VALID_OWNER1, VALID_RR_TYPE_CNAME);
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
+            Object entry = rrs.records().get(0);
             assertTrue(entry instanceof CNAMEData);
             CNAMEData cnameData = (CNAMEData) entry;
             assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);

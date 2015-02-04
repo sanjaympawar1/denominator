@@ -42,14 +42,16 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
             // in case of error parsing, we can access the original contents.
             response = bufferResponse(response);
             VerisignMdnsError error = VerisignMdnsError.class.cast(decoder.decode(response, VerisignMdnsError.class));
-            if (error == null)
+            if (error == null) {
                 return FeignException.errorStatus(methodKey, response);
+            }
             String message = format("%s failed", methodKey);
-            if (error.code != -1)
+            if (error.code != -1) {
                 message = format("%s with error %s", message, error.code);
-            if (error.description != null)
+            }
+            if (error.description != null) {
                 message = format("%s: %s", message, error.description);
-
+            }
             return new VerisignMdnsException(message, error.code);
         } catch (IOException ignored) {
             return FeignException.errorStatus(methodKey, response);
