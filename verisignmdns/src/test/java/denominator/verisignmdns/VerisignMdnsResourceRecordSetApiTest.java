@@ -71,6 +71,8 @@ public class VerisignMdnsResourceRecordSetApiTest {
     @Test
     public void rrListvalidResponse() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();
+        //setting two mock response to check result list is not appended
+        server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.play();
         try {
@@ -89,6 +91,15 @@ public class VerisignMdnsResourceRecordSetApiTest {
             assertTrue(iter.hasNext());
             String expectedRequest = format(rrListRequestTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
+            
+            // again requesting the same to check records are not appended.
+            iter = api.iterator();
+            int count = 0;
+            while (iter.hasNext()) {
+                iter.next();
+                count++;
+            }
+            assertEquals(count, 2);
         } finally {
             server.shutdown();
         }
