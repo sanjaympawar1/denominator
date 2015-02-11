@@ -26,15 +26,8 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
-        List<Record> recordList = new ArrayList<Record>();
-        int pageCounter = 1;
-        List<Record> tempList;
-        do {
-            tempList = api.getResourceRecordsList(domainName, pageCounter, DEFAULT_PAGE_SIZE);
-            recordList.addAll(tempList);
-            pageCounter++;
-        } while (tempList.size() >= DEFAULT_PAGE_SIZE);
-        return VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList).iterator();
+        // @TODO IMPLEMENT -- in future development phase /////////
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -56,31 +49,14 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
-        checkNotNull(type, "type was null");
-        checkNotNull(name, "name was null");
-        List<Record> recordList = new ArrayList<Record>();
-        int pageCounter = 1;
-        List<Record> tempList;
-        do {
-            tempList = api.getResourceRecordsListForNameAndType(domainName, name, type, pageCounter
-                    , DEFAULT_PAGE_SIZE);
-            recordList.addAll(tempList);
-            pageCounter++;
-        } while (tempList.size() >= DEFAULT_PAGE_SIZE);
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList)
-                .iterator();
-        return result;
+        // @TODO IMPLEMENT -- in future development phase /////////
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
-        ResourceRecordSet<?> result = null;
-        List<Record> recordList = api.getResourceRecordByQualifier(qualifier);
-        Set<ResourceRecordSet<?>> rrset = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList);
-        if (!rrset.isEmpty()) {
-            result = rrset.iterator().next();
-        }
-        return result;
+        // @TODO IMPLEMENT -- in future development phase /////////
+        throw new UnsupportedOperationException();
     }
 
     @Override
