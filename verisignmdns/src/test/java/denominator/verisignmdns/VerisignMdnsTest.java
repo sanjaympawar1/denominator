@@ -27,16 +27,18 @@ import feign.codec.ErrorDecoder;
 
 public class VerisignMdnsTest {
     public static final String VALID_TTL1 = "86000";
-    public static final String VALID_RR_TYPE2 = "TXT";
+    public static final String VALID_RR_TYPE_TXT = "TXT";
     public static final String VALID_RR_TYPE_CNAME = "CNAME";
     public static final String TEST_USER_NAME = "testUser";
     public static final String TEST_PASSWORD = "testPass";
     public static final String VALID_RR_TYPE_NAPTR = "NAPTR";
     public static final String VALID_RR_TYPE_SRV = "SRV";
+    public static final String VALID_RR_TYPE_MX = "MX";
     public static final String METHODKEY = "testMethodKey";
     public static final String VALID_RDATA1 = "dummy_rdata1";
     public static final String VALID_RDATA2 = "dummy_rdata2";
-    public static final String RESOURCE_RECORD_ID = "19049261";
+    public static final String RESOURCE_RECORD_ID1 = "19049261";
+    public static final String RESOURCE_RECORD_ID2 = "19049262";
     public static final String VALID_QUALIFIER = "testqualifier";
     public static final String VALID_ZONE_NAME1 = "dummyDomain1.com";
     public static final String VALID_ZONE_NAME2 = "dummyDomain2.co.cc";
@@ -45,6 +47,8 @@ public class VerisignMdnsTest {
     public static final String VALID_URL = "https://api.dns-tool.com/dnsa-ws/V2.0/dnsaapi";
     public static final String VALID_RDATA_NAPTR = "100 50 \"a\" \"z3950+n2l+n2c\" \"\" cidserver.example.com.";
     public static final String VALID_RDATA_SRV = "0 5 5060 sipserver.example.com.";
+    public static final String VALID_RDATA_MX1 = "10 mail1";
+    public static final String VALID_RDATA_MX2 = "50 mail2";
 
     static final String TEMPLATE_HEAD = 
             "<?xml version='1.0' encoding='UTF-8'?>"
@@ -86,7 +90,15 @@ public class VerisignMdnsTest {
             TEMPLATE_HEAD 
                 + "<urn2:deleteResourceRecords>"
                     + "<urn2:domainName>" + VALID_ZONE_NAME1 + "</urn2:domainName>"
-                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID + "</urn2:resourceRecordId>" 
+                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</urn2:resourceRecordId>" 
+                + "</urn2:deleteResourceRecords>"
+             + TEMPLATE_TAIL;
+    public static final String rrDelete2RecordsTemplete =
+            TEMPLATE_HEAD 
+                + "<urn2:deleteResourceRecords>"
+                    + "<urn2:domainName>" + VALID_ZONE_NAME1 + "</urn2:domainName>"
+                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</urn2:resourceRecordId>"
+                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID2 + "</urn2:resourceRecordId>" 
                 + "</urn2:deleteResourceRecords>"
              + TEMPLATE_TAIL;
     public static final String rrDeleteResponse = 
@@ -106,7 +118,7 @@ public class VerisignMdnsTest {
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>2</ns2:totalCount>" 
                         + "<ns2:resourceRecord>"
-                            + "<ns2:resourceRecordId>" + RESOURCE_RECORD_ID + "</ns2:resourceRecordId>"
+                            + "<ns2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</ns2:resourceRecordId>"
                             + "<ns2:owner>mbvdemo.mbv-demo.cc.</ns2:owner>"
                             + "<ns2:type>CNAME</ns2:type>"
                             + "<ns2:ttl>86400</ns2:ttl>"
@@ -118,7 +130,7 @@ public class VerisignMdnsTest {
     public static final String rrListCNAMETypesTemplete =
             TEMPLATE_HEAD 
                 + "<urn2:getResourceRecord>"
-                + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID + "</urn2:resourceRecordId>"
+                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</urn2:resourceRecordId>"
                 + "</urn2:getResourceRecord>"
             + TEMPLATE_TAIL;
     public static final String getrrListCNAMETypesTemplete =
@@ -148,6 +160,30 @@ public class VerisignMdnsTest {
                             + "<ns2:type>" + VALID_RR_TYPE_NAPTR + "</ns2:type>"
                             + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
                             + "<ns2:rData>" + VALID_RDATA_NAPTR + "</ns2:rData>"
+                        + "</ns2:resourceRecord>"
+                   + "</ns2:getResourceRecordListRes>"
+                + "</S:Body>"
+            + "</S:Envelope>";
+    public static final String mXDataSameOwnerResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                + "<S:Body>"
+                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                        + "<ns2:callSuccess>true</ns2:callSuccess>"
+                        + "<ns2:totalCount>2</ns2:totalCount>"
+                        + "<ns2:resourceRecord>"
+                            + "<ns2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</ns2:resourceRecordId>"
+                            + "<ns2:owner>" + VALID_OWNER1 + "</ns2:owner>"
+                            + "<ns2:type>" + VALID_RR_TYPE_MX + "</ns2:type>"
+                            + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
+                            + "<ns2:rData>" + VALID_RDATA_MX1 + "</ns2:rData>"
+                        + "</ns2:resourceRecord>"
+                        + "<ns2:resourceRecord>"
+                            + "<ns2:resourceRecordId>" + RESOURCE_RECORD_ID2 + "</ns2:resourceRecordId>"
+                            + "<ns2:owner>" + VALID_OWNER1 + "</ns2:owner>"
+                            + "<ns2:type>" + VALID_RR_TYPE_MX + "</ns2:type>"
+                            + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
+                            + "<ns2:rData>" + VALID_RDATA_MX2 + "</ns2:rData>"
                         + "</ns2:resourceRecord>"
                    + "</ns2:getResourceRecordListRes>"
                 + "</S:Body>"
@@ -218,6 +254,10 @@ public class VerisignMdnsTest {
             TEMPLATE_HEAD 
                 + "<urn2:getResourceRecordList>"
                     + "<urn2:domainName>%s</urn2:domainName>"
+                    + "<urn2:listPagingInfo>"
+                        + "<urn2:pageNumber>1</urn2:pageNumber>"
+                        + "<urn2:pageSize>100</urn2:pageSize>"
+                    + "</urn2:listPagingInfo>"
                 + "</urn2:getResourceRecordList>"
             + TEMPLATE_TAIL;
     public static final String rrByNameAndTypeTemplate =
@@ -226,6 +266,10 @@ public class VerisignMdnsTest {
                     + "<ns3:domainName>%s</ns3:domainName>"
                     + "<ns3:resourceRecordType>%s</ns3:resourceRecordType>"
                     + "<ns3:owner>%s</ns3:owner>"
+                    + "<ns3:listPagingInfo>"
+                        + "<ns3:pageNumber>1</ns3:pageNumber>"
+                        + "<ns3:pageSize>100</ns3:pageSize>"
+                    + "</ns3:listPagingInfo>"
                 + "</ns3:getResourceRecordList>"
           + TEMPLATE_TAIL;
     public static final String rrListValildResponse =
@@ -243,11 +287,11 @@ public class VerisignMdnsTest {
                             + "<ns2:rData>" + VALID_RDATA1 + "</ns2:rData>"
                        + "</ns2:resourceRecord>"
                        + "<ns2:resourceRecord>"
-                           + "<ns2:resourceRecordId>19049261</ns2:resourceRecordId>"
-                           + "<ns2:owner>" + VALID_OWNER2 + "</ns2:owner>"
-                           + "<ns2:type>" + VALID_RR_TYPE2 + "</ns2:type>"
-                           + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
-                           + "<ns2:rData>" + VALID_RDATA2 + "</ns2:rData>"
+                            + "<ns2:resourceRecordId>19049261</ns2:resourceRecordId>"
+                            + "<ns2:owner>" + VALID_OWNER2 + "</ns2:owner>"
+                            + "<ns2:type>" + VALID_RR_TYPE_TXT + "</ns2:type>"
+                            + "<ns2:ttl>" + VALID_TTL1 + "</ns2:ttl>"
+                            + "<ns2:rData>" + VALID_RDATA2 + "</ns2:rData>"
                       + "</ns2:resourceRecord>"
                   + "</ns2:getResourceRecordListRes>"
                + "</S:Body>"
@@ -348,33 +392,22 @@ public class VerisignMdnsTest {
     }
 
     public static Record mockNaptrRecord() {
-        String rData = VALID_RDATA_NAPTR;
-        Record record = new Record();
-        record.id = VALID_TTL1;
-        record.name = VALID_OWNER1;
-        record.type = VALID_RR_TYPE_NAPTR;
-        record.ttl = Integer.parseInt(VALID_TTL1);
-        record.rdata = rData;
-        return record;
+        return mockRecord(VALID_OWNER1, VALID_RR_TYPE_NAPTR, VALID_RDATA_NAPTR);
     }
 
     public static Record mockCNameRecord() {
-        String rData = VALID_RDATA1;
-        Record record = new Record();
-        record.id = VALID_TTL1;
-        record.name = VALID_OWNER1;
-        record.type = VALID_RR_TYPE_CNAME;
-        record.ttl = Integer.parseInt(VALID_TTL1);
-        record.rdata = rData;
-        return record;
+        return mockRecord(VALID_OWNER1, VALID_RR_TYPE_CNAME, VALID_RDATA1);
     }
     
     public static Record mockSrvRecord() {
-        String rData = VALID_RDATA_SRV;
+        return mockRecord(VALID_OWNER1, VALID_RR_TYPE_SRV, VALID_RDATA_SRV);
+    }
+    
+    public static Record mockRecord(String owner, String type, String rData) {
         Record record = new Record();
         record.id = VALID_TTL1;
-        record.name = VALID_OWNER1;
-        record.type = VALID_RR_TYPE_SRV;
+        record.name = owner;
+        record.type = type;
         record.ttl = Integer.parseInt(VALID_TTL1);
         record.rdata = rData;
         return record;

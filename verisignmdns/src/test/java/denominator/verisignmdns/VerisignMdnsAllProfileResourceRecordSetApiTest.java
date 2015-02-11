@@ -1,6 +1,6 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMdnsTest.RESOURCE_RECORD_ID;
+import static denominator.verisignmdns.VerisignMdnsTest.RESOURCE_RECORD_ID1;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
@@ -39,10 +39,10 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
             ResourceRecordSet<?> actualResult = vrsnAllProfileResourceRecordSetApi.getByNameTypeAndQualifier(
-                    TEST_USER_NAME, VALID_RR_TYPE_CNAME, RESOURCE_RECORD_ID);
+                    TEST_USER_NAME, VALID_RR_TYPE_CNAME, RESOURCE_RECORD_ID1);
             assertNotNull(actualResult);
 
-            String expectedRequest = format(rrListCNAMETypesTemplete, TEST_USER_NAME, TEST_PASSWORD, RESOURCE_RECORD_ID);
+            String expectedRequest = format(rrListCNAMETypesTemplete, TEST_USER_NAME, TEST_PASSWORD, RESOURCE_RECORD_ID1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
         } finally {
             server.shutdown();

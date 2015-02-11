@@ -2,6 +2,8 @@ package denominator.verisignmdns;
 
 import static denominator.common.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,12 +11,14 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import sun.security.util.Length;
 import denominator.ResourceRecordSetApi;
 import denominator.common.Util;
 import denominator.model.ResourceRecordSet;
 import denominator.verisignmdns.VerisignMdns.Record;
 
 final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
+    private static final int DEFAULT_PAGE_SIZE = 100;
     private final String domainName;
     private final VerisignMdns api;
 
@@ -25,15 +29,32 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterator() {
-        List<Record> recordList = api.getResourceRecordsList(domainName);
-        return VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList).iterator();
+        List<Record> recordList = new ArrayList<Record>();
+        int pageCounter = 1;
+        List<Record> tempList;
+        do {
+            tempList = api.getResourceRecordsList(domainName, pageCounter, DEFAULT_PAGE_SIZE);
+            recordList.addAll(tempList);
+            pageCounter++;
+        } while (tempList.size() >= DEFAULT_PAGE_SIZE);
+        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList)
+                .iterator();
+        return result;
     }
+
 
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
-        List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList)
+        List<Record> recordList = new ArrayList<Record>();
+        int pageCounter = 1;
+        List<Record> tempList;
+        do {
+            tempList = api.getResourceRecordsListForNameAndType(domainName, name, type, pageCounter, DEFAULT_PAGE_SIZE);
+            recordList.addAll(tempList);
+            pageCounter++;
+        } while (tempList.size() >= DEFAULT_PAGE_SIZE);
+        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList)
                 .iterator();
         return result;
     }
@@ -48,9 +69,10 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
         ResourceRecordSet<?> result = null;
-        List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        Set<ResourceRecordSet<?>> tempSet = VerisignMdnsContentConversionFunctions.getResourceRecordSet(recordList);
-        result = tempSet.iterator().next();
+        Iterator<ResourceRecordSet<?>> iter = iterateByNameAndType(name, type);
+        if (iter.hasNext()) {
+            result = iter.next();
+        }
         return result;
     }
 
@@ -59,29 +81,28 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         checkNotNull(rrset, "Resource Record was null");
         checkNotNull(rrset.name(), "Resource Record Name was null");
         checkNotNull(rrset.type(), "Resource Record Type was null");
-        // At this point disable delete
-        // as we might delete multiple records for name and type.
-        // Need to decide if that is correct
-        // ResourceRecordSet<?> rrsMatch = getByNameAndType(rrset.name(),
-        // rrset.type());
-        // if (rrsMatch != null) {
-        // deleteByNameAndType(rrset.name(), rrset.type());
-        // }
+        // deleting existing RRs
+        deleteByNameAndType(rrset.name(), rrset.type());
         int ttlInt = 86000;
         Integer ttlRRSet = rrset.ttl();
         if (ttlRRSet != null) {
             ttlInt = ttlRRSet.intValue();
         }
-        String rData = getRDataStringFromRRSet(rrset);
-        api.createResourceRecord(domainName, rrset.type(), rrset.name(), "" + ttlInt, rData);
+        List<String> rDataList = getRDataListFromRRSet(rrset);
+        api.createResourceRecords(domainName, rrset.type(), rrset.name(), "" + ttlInt, rDataList);
     }
 
     @Override
     public void deleteByNameAndType(String name, String type) {
-        List<Record> recordList = api.getResourceRecordsListForTypeAndName(domainName, type, name);
-        for (Record record : recordList) {
-            api.deleteRecourceRecord(domainName, record.id);
+        List<Record> recordList = getByNameAndTypeFromMDNS(name, type);
+        if (recordList ==null || recordList.isEmpty()) {
+            return;
         }
+        ArrayList<String> recordIdList = new ArrayList<String>();
+        for (Record record : recordList) {
+            recordIdList.add(record.id);
+        }
+        api.deleteRecourceRecords(domainName, recordIdList);
     }
 
     public static final class Factory implements denominator.ResourceRecordSetApi.Factory {
@@ -99,25 +120,29 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         }
     }
 
-    private String getRDataStringFromRRSet(ResourceRecordSet rrset) {
-        StringBuilder sb = new StringBuilder();
-        if (rrset != null) {
-            if (rrset.type().equals("NAPTR")) {
-                sb.append(VerisignMdnsRequestFunctions.getNAPTRData(rrset));
+    private List<String> getRDataListFromRRSet(ResourceRecordSet rrset) {
+        ArrayList<String> result = new ArrayList<String>();
+        for (Object obj : rrset.records()) {
+            if (obj instanceof Map) {
+                result.add(Util.flatten((Map<String, Object>) obj));
             } else {
-                for (Object obj : rrset.records()) {
-                    if (sb.length() > 0) {
-                        sb.append(",");
-                    }
-                    if (obj instanceof Map) {
-                        sb.append(Util.flatten((Map<String, Object>) obj));
-                    } else {
-                        sb.append(obj.toString());
-                    }
-                }
+                result.add(obj.toString());
             }
         }
-        return sb.toString();
+        return result;
+    }
+
+    private List<Record> getByNameAndTypeFromMDNS(String name, String type) {
+        List<Record> recordList = new ArrayList<Record>();
+        int pageCounter = 1;
+        List<Record> tempList;
+        do {
+            tempList = api.getResourceRecordsListForNameAndType(domainName, name, type, pageCounter,
+                    DEFAULT_PAGE_SIZE);
+            recordList.addAll(tempList);
+            pageCounter++;
+        } while (tempList.size() >= DEFAULT_PAGE_SIZE);
+        return recordList;
     }
 }
 
