@@ -49,10 +49,15 @@ public class VerisignMdnsTest {
     public static final String VALID_RDATA_SRV = "0 5 5060 sipserver.example.com.";
     public static final String VALID_RDATA_MX1 = "10 mail1";
     public static final String VALID_RDATA_MX2 = "50 mail2";
+    public static final String VALID_RDATA_MX3 = "100 mail3";
+    public static final String VALID_ZONE_NAME = "mytest.com";
 
     static final String TEMPLATE_HEAD = 
             "<?xml version='1.0' encoding='UTF-8'?>"
-                    + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope' xmlns:urn='urn:com:verisign:dnsa:messaging:schema:1' xmlns:urn1='urn:com:verisign:dnsa:auth:schema:1' xmlns:urn2='urn:com:verisign:dnsa:api:schema:1'>"
+                    + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope' "
+                                            + "xmlns:urn='urn:com:verisign:dnsa:messaging:schema:1' "
+                                            + "xmlns:urn1='urn:com:verisign:dnsa:auth:schema:1' "
+                                            + "xmlns:urn2='urn:com:verisign:dnsa:api:schema:1'>"
                         + "<S:Header>"
                             + "<urn1:authInfo>"
                                 + "<urn1:userToken>" 
@@ -65,15 +70,15 @@ public class VerisignMdnsTest {
     static final String TEMPLATE_TAIL = 
                         "</S:Body>" 
                    + "</S:Envelope>";
-    public static final String createRequestARecordTemplete =
+    public static final String createRequestRecordTemplete =
             TEMPLATE_HEAD 
                 + "<urn2:createResourceRecords>"
-                    + "<urn2:domainName>" + VALID_ZONE_NAME1 + "</urn2:domainName>"
+                    + "<urn2:domainName>%s</urn2:domainName>"
                     + "<urn2:resourceRecord allowanyIP='false'>"
-                        + "<urn2:owner>" + VALID_OWNER1 + "</urn2:owner>"
-                        + "<urn2:type>" + VALID_RR_TYPE_CNAME + "</urn2:type>" 
-                        + "<urn2:ttl>" + VALID_TTL1 + "</urn2:ttl>"
-                        + "<urn2:rData>" + VALID_RDATA1 + "</urn2:rData>"
+                        + "<urn2:owner>%s</urn2:owner>"
+                        + "<urn2:type>%s</urn2:type>" 
+                        + "<urn2:ttl>%s</urn2:ttl>"
+                        + "<urn2:rData>%s</urn2:rData>"
                     + "</urn2:resourceRecord>"
                + "</urn2:createResourceRecords>"
           + TEMPLATE_TAIL;
@@ -81,16 +86,20 @@ public class VerisignMdnsTest {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">"
                 + "<S:Body>"
-                    + "<ns2:dnsaWSRes xmlns=\"urn:com:verisign:dnsa:api:schema:2\" xmlns:ns2=\"urn:com:verisign:dnsa:api:schema:1\" xmlns:ns3=\"urn:com:verisign:dnsa:auth:schema:1\" xmlns:ns4=\"urn:com:verisign:dnsa:messaging:schema:1\">"
+                    + "<ns2:dnsaWSRes xmlns=\"urn:com:verisign:dnsa:api:schema:2\" "
+                                            + "xmlns:ns2=\"urn:com:verisign:dnsa:api:schema:1\" "
+                                            + "xmlns:ns3=\"urn:com:verisign:dnsa:auth:schema:1\" "
+                                            + "xmlns:ns4=\"urn:com:verisign:dnsa:messaging:schema:1\">"
                         + "<ns2:callSuccess>true</ns2:callSuccess>" 
                     + "</ns2:dnsaWSRes>" 
                 + "</S:Body>" 
             + "</S:Envelope>";
+    
     public static final String rrDeleteTemplete =
             TEMPLATE_HEAD 
                 + "<urn2:deleteResourceRecords>"
-                    + "<urn2:domainName>" + VALID_ZONE_NAME1 + "</urn2:domainName>"
-                    + "<urn2:resourceRecordId>" + RESOURCE_RECORD_ID1 + "</urn2:resourceRecordId>" 
+                    + "<urn2:domainName>%s</urn2:domainName>"
+                    + "<urn2:resourceRecordId>%s</urn2:resourceRecordId>" 
                 + "</urn2:deleteResourceRecords>"
              + TEMPLATE_TAIL;
     public static final String rrDelete2RecordsTemplete =
@@ -105,7 +114,10 @@ public class VerisignMdnsTest {
            "<?xml version='1.0' encoding='UTF-8'?>"
            + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
               + "<S:Body>"
-                  + "<ns2:dnsaWSRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                  + "<ns2:dnsaWSRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                              + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                              + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                              + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                       + "<ns2:callSuccess>true</ns2:callSuccess>" 
                   + "</ns2:dnsaWSRes>" 
               + "</S:Body>" 
@@ -114,7 +126,10 @@ public class VerisignMdnsTest {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<S:Envelope xmlns:S=\"http://www.w3.org/2003/05/soap-envelope\">"
                 + "<S:Body>"
-                    + "<ns2:getResourceRecordListRes xmlns=\"urn:com:verisign:dnsa:api:schema:2\" xmlns:ns2=\"urn:com:verisign:dnsa:api:schema:1\" xmlns:ns3=\"urn:com:verisign:dnsa:auth:schema:1\" xmlns:ns4=\"urn:com:verisign:dnsa:messaging:schema:1\">"
+                    + "<ns2:getResourceRecordListRes xmlns=\"urn:com:verisign:dnsa:api:schema:2\" "
+                                               + "xmlns:ns2=\"urn:com:verisign:dnsa:api:schema:1\" "
+                                               + "xmlns:ns3=\"urn:com:verisign:dnsa:auth:schema:1\" "
+                                               + "xmlns:ns4=\"urn:com:verisign:dnsa:messaging:schema:1\">"
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>2</ns2:totalCount>" 
                         + "<ns2:resourceRecord>"
@@ -135,7 +150,9 @@ public class VerisignMdnsTest {
             + TEMPLATE_TAIL;
     public static final String getrrListCNAMETypesTemplete =
             TEMPLATE_HEAD
-                + "<ns3:getResourceRecordList xmlns=\"urn:com:verisign:dnsa:auth:schema:1\" xmlns:ns2=\"urn:com:verisign:dnsa:messaging:schema:1\" xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
+                + "<ns3:getResourceRecordList xmlns=\"urn:com:verisign:dnsa:auth:schema:1\" "
+                                             + "xmlns:ns2=\"urn:com:verisign:dnsa:messaging:schema:1\" "
+                                             + "xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
                     + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>"
                     + "<ns3:resourceRecordType>" + VALID_RR_TYPE_CNAME + "</ns3:resourceRecordType>"
                  + "</ns3:getResourceRecordList>" 
@@ -144,7 +161,10 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                 + "<S:Body>"
-                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                               + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                               + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                               + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>2</ns2:totalCount>"
                         + "<ns2:resourceRecord>"
@@ -168,7 +188,10 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                 + "<S:Body>"
-                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                                   + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                                   + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                                   + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>2</ns2:totalCount>"
                         + "<ns2:resourceRecord>"
@@ -190,7 +213,9 @@ public class VerisignMdnsTest {
             + "</S:Envelope>";
     public static final String zoneListRequestTemplate =
             TEMPLATE_HEAD
-                + "<ns3:getZoneList xmlns='urn:com:verisign:dnsa:messaging:schema:1' xmlns:ns2='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
+                + "<ns3:getZoneList xmlns='urn:com:verisign:dnsa:messaging:schema:1' "
+                                            + "xmlns:ns2='urn:com:verisign:dnsa:auth:schema:1' "
+                                            + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
                      + "<ns3:listPagingInfo>"
                          + "<ns3:pageNumber>1</ns3:pageNumber>"
                          + "<ns3:pageSize>500</ns3:pageSize>"
@@ -206,7 +231,10 @@ public class VerisignMdnsTest {
                     + "</ns2:reliableMessageRes>"
                + "</S:Header>"
                + "<S:Body>"
-                   + "<ns2:getZoneListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                   + "<ns2:getZoneListRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                              + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                              + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                              + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                        + "<ns2:callSuccess>true</ns2:callSuccess>"
                        + "<ns2:totalCount>2</ns2:totalCount>" 
                        + "<ns2:zoneInfo>"
@@ -232,17 +260,22 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                 + "<S:Header>"
-                    + "<ns2:reliableMessageRes xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'><ns2:MessageId>1111011</ns2:MessageId>"
+                    + "<ns2:reliableMessageRes xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'>"
+                    + "<ns2:MessageId>1111011</ns2:MessageId>"
                     + "</ns2:reliableMessageRes>"
                 + "</S:Header>"
                 + "<S:Body>"
-                    + "<ns3:Fault xmlns:ns2='http://schemas.xmlsoap.org/soap/envelope/' xmlns:ns3='http://www.w3.org/2003/05/soap-envelope'>"
+                    + "<ns3:Fault xmlns:ns2='http://schemas.xmlsoap.org/soap/envelope/' "
+                                            + "xmlns:ns3='http://www.w3.org/2003/05/soap-envelope'>"
                         + "<ns3:Code><ns3:Value>ns3:Receiver</ns3:Value></ns3:Code>"
                         + "<ns3:Reason>"
                             + "<ns3:Text xml:lang='en'>ERROR_OPERATION_FAILURE</ns3:Text>"
                         + "</ns3:Reason>"
                         + "<ns3:Detail>"
-                            + "<ns2:dnsaWSRes xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:api:schema:2' xmlns:ns4='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns5='urn:com:verisign:dnsa:messaging:schema:1'>"
+                            + "<ns2:dnsaWSRes xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                                    + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:2' "
+                                                    + "xmlns:ns4='urn:com:verisign:dnsa:auth:schema:1' "
+                                                    + "xmlns:ns5='urn:com:verisign:dnsa:messaging:schema:1'>"
                                 + "<ns2:callSuccess>false</ns2:callSuccess>"
                                 + "<ns2:reason code='ERROR_OPERATION_FAILURE' description='Authentication Failed. Please verify your Username and Password.'/>"
                             + "</ns2:dnsaWSRes>"
@@ -262,7 +295,9 @@ public class VerisignMdnsTest {
             + TEMPLATE_TAIL;
     public static final String rrByNameAndTypeTemplate =
             TEMPLATE_HEAD
-                + "<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
+                + "<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                                               + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                                               + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
                     + "<ns3:domainName>%s</ns3:domainName>"
                     + "<ns3:resourceRecordType>%s</ns3:resourceRecordType>"
                     + "<ns3:owner>%s</ns3:owner>"
@@ -276,7 +311,10 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                 + "<S:Body>"
-                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                                        + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                                        + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                                        + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>2</ns2:totalCount>"
                         + "<ns2:resourceRecord>"
@@ -300,7 +338,10 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                 + "<S:Body>"
-                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                    + "<ns2:getResourceRecordListRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                                        + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                                        + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                                        + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                         + "<ns2:callSuccess>true</ns2:callSuccess>"
                         + "<ns2:totalCount>0</ns2:totalCount>"
                      + "</ns2:getResourceRecordListRes>"
@@ -318,7 +359,10 @@ public class VerisignMdnsTest {
                             + "<S:Text xml:lang='en'>ERROR_OPERATION_FAILURE</S:Text>"
                         + "</S:Reason>"
                         + "<S:Detail>"
-                            + "<ns2:dnsaWSRes xmlns='urn:com:verisign:dnsa:api:schema:2' xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
+                            + "<ns2:dnsaWSRes xmlns='urn:com:verisign:dnsa:api:schema:2' "
+                                                    + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:1' "
+                                                    + "xmlns:ns3='urn:com:verisign:dnsa:auth:schema:1' "
+                                                    + "xmlns:ns4='urn:com:verisign:dnsa:messaging:schema:1'>"
                                 + "<ns2:callSuccess>false</ns2:callSuccess>"
                                 + "<ns2:reason code='ERROR_OPERATION_FAILURE' description='The domain name could not be found.'/>"
                             + "</ns2:dnsaWSRes>" 
@@ -326,6 +370,41 @@ public class VerisignMdnsTest {
                   + "</S:Fault>"
                + "</S:Body>"
            + "</S:Envelope>";
+
+    public static final String updateRecordTemplate =
+            TEMPLATE_HEAD
+                + "<urn2:updateResourceRecord>"
+                    + "<urn2:domainName>%s</urn2:domainName>" 
+                    + "<urn2:resourceRecord allowanyIP=\"false\">"
+                        + "<urn2:resourceRecordId>%s</urn2:resourceRecordId>"
+                        + "<urn2:owner>%s</urn2:owner>"
+                        + "<urn2:type>%s</urn2:type>"
+                        + "<urn2:ttl>%s</urn2:ttl>"
+                        + "<urn2:rData>%s</urn2:rData>"
+                    + "</urn2:resourceRecord>"
+               + "</urn2:updateResourceRecord>"
+         + TEMPLATE_TAIL;
+
+    public static final String rrRecordUpdateResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+                + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                    + "<S:Body>"
+                        + "<ns3:updateResourceRecordRes xmlns='urn:com:verisign:dnsa:messaging:schema:1' "
+                                                        + "xmlns:ns2='urn:com:verisign:dnsa:api:schema:2' "
+                                                        + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1' "
+                                                        + "xmlns:ns4='urn:com:verisign:dnsa:auth:schema:1'>"
+                               + "<ns3:callSuccess>true</ns3:callSuccess>"
+                               + "<ns3:domainName>%s</ns3:domainName>"
+                                   + "<ns3:resourceRecord>"
+                                       + "<ns3:resourceRecordId>%s</ns3:resourceRecordId>"
+                                       + "<ns3:owner>%s</ns3:owner>"
+                                       + "<ns3:type>%s</ns3:type>"
+                                       + "<ns3:ttl>%s</ns3:ttl>"
+                                       + "<ns3:rData>%s</ns3:rData>"
+                                  + "</ns3:resourceRecord>"
+                               + "</ns3:updateResourceRecordRes>'"
+                     + "</S:Body>"
+               + "</S:Envelope>";
 
     public static ZoneApi mockZoneApi(final int port) {
         return Denominator.create(new VerisignMdnsProvider() {

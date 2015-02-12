@@ -1,13 +1,12 @@
 package denominator.verisignmdns;
 
 import java.util.List;
-import java.util.Map;
+
 
 import denominator.model.Zone;
 
 import javax.inject.Named;
 
-import sun.misc.Compare;
 import feign.Body;
 import feign.RequestLine;
 
@@ -28,7 +27,9 @@ interface VerisignMdns {
             @Named("pageSize") int pageSize);
 
     @RequestLine("POST")
-    @Body("<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
+    @Body("<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                            + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                            + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
             + "<ns3:domainName>{zonename}</ns3:domainName>"
             + "<ns3:resourceRecordType>{type}</ns3:resourceRecordType>"
             + "<ns3:owner>{name}</ns3:owner>"
@@ -53,6 +54,20 @@ interface VerisignMdns {
 
     @RequestLine("POST")
     void deleteRecourceRecords(@Named("zonename") String zonename, @Named("recordIdList") List<String> recordIdList);
+
+    @RequestLine("POST")
+    @Body("<urn2:updateResourceRecord>"
+            + "<urn2:domainName>{zonename}</urn2:domainName>" 
+            + "<urn2:resourceRecord allowanyIP=\"false\">"
+                + "<urn2:resourceRecordId>{id}</urn2:resourceRecordId>"
+                + "<urn2:owner>{name}</urn2:owner>"
+                + "<urn2:type>{type}</urn2:type>"
+                + "<urn2:ttl>{ttl}</urn2:ttl>"
+                + "<urn2:rData>{rdata}</urn2:rData>"
+            + "</urn2:resourceRecord>"
+         + "</urn2:updateResourceRecord>")
+    void updateRecord(@Named("zonename") String zonename, @Named("id") String id, @Named("name") String name,
+            @Named("type") String type, @Named("ttl") String ttl, @Named("rdata") String rData);
 
     static class Record implements Comparable<Record>{
         String id;

@@ -3,15 +3,17 @@ package denominator.verisignmdns;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
 import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_OWNER2;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA_MX1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA_MX2;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA_MX3;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_CNAME;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RR_TYPE_MX;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
 import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordResponse;
-import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.createRequestRecordTemplete;
 import static denominator.verisignmdns.VerisignMdnsTest.mockResourceRecordSetApi;
 import static denominator.verisignmdns.VerisignMdnsTest.rrByNameAndTypeTemplate;
 import static denominator.verisignmdns.VerisignMdnsTest.rrDeleteResponse;
@@ -22,6 +24,11 @@ import static denominator.verisignmdns.VerisignMdnsTest.rrListValidResponseNoRec
 import static denominator.verisignmdns.VerisignMdnsTest.rrListValildResponse;
 import static denominator.verisignmdns.VerisignMdnsTest.mXDataSameOwnerResponse;
 import static denominator.verisignmdns.VerisignMdnsTest.rrDelete2RecordsTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.rrRecordUpdateResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME;
+import static denominator.verisignmdns.VerisignMdnsTest.RESOURCE_RECORD_ID1;
+import static denominator.verisignmdns.VerisignMdnsTest.RESOURCE_RECORD_ID2;
+import static denominator.verisignmdns.VerisignMdnsTest.updateRecordTemplate;
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -199,7 +206,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
             String expectedRequest1 = format(rrByNameAndTypeTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
                     VALID_RR_TYPE_CNAME, VALID_OWNER1);
             String expectedRequest2 = format(rrDeleteTemplete, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
+                    RESOURCE_RECORD_ID1);
              assertEquals(new String(server.takeRequest().getBody()), expectedRequest1);
              assertEquals(new String(server.takeRequest().getBody()), expectedRequest2);
         } finally {
@@ -229,28 +236,35 @@ public class VerisignMdnsResourceRecordSetApiTest {
     @Test
     public void testPut() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(rrListCNAMETypesResponse));
+        server.enqueue(new MockResponse().setBody(mXDataSameOwnerResponse));
         server.enqueue(new MockResponse().setBody(rrDeleteResponse));
+        String updateResponse = format(rrRecordUpdateResponse, VALID_ZONE_NAME, RESOURCE_RECORD_ID1, VALID_OWNER1,
+                VALID_RR_TYPE_MX, VALID_TTL1, VALID_RDATA_MX1);
+        server.enqueue(new MockResponse().setBody(updateResponse));
         server.enqueue(new MockResponse().setBody(createRequestARecordResponse));
         server.play();
         try {
             ResourceRecordSetApi api = mockResourceRecordSetApi(server.getPort());
             List<Record> mdnsRecordList = new ArrayList<Record>();
-            Record mDNSRecord = VerisignMdnsTest.mockCNameRecord();
-            mdnsRecordList.add(mDNSRecord);
+            mdnsRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_MX, VALID_RDATA_MX1));
+            mdnsRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_MX, VALID_RDATA_MX3));
+            
             Set<ResourceRecordSet<?>> inputRecordSet = VerisignMdnsContentConversionFunctions
                       .getMergedResourceRecordToRRSet(mdnsRecordList);
             api.put(inputRecordSet.iterator().next());
 
             String expectedRequest1 = format(rrByNameAndTypeTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
+                    VALID_RR_TYPE_MX, VALID_OWNER1);
             String expectedRequest2 = format(rrDeleteTemplete, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
-                    VALID_RR_TYPE_CNAME, VALID_OWNER1);
-            String expectedRequestCreate = format(createRequestARecordTemplete, TEST_USER_NAME, TEST_PASSWORD,
-                    VALID_ZONE_NAME1, VALID_RR_TYPE_CNAME, VALID_OWNER1);
+                    RESOURCE_RECORD_ID2);
+            String expectRequestUpdate = format(updateRecordTemplate, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1,
+                    RESOURCE_RECORD_ID1, VALID_OWNER1, VALID_RR_TYPE_MX, VALID_TTL1, VALID_RDATA_MX1);
+            String expectedRequestCreate = format(createRequestRecordTemplete, TEST_USER_NAME, TEST_PASSWORD,
+                    VALID_ZONE_NAME1, VALID_OWNER1, VALID_RR_TYPE_MX, VALID_TTL1, VALID_RDATA_MX3);
 
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest1);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequest2);
+            assertEquals(new String(server.takeRequest().getBody()), expectRequestUpdate);
             assertEquals(new String(server.takeRequest().getBody()), expectedRequestCreate);
         } finally {
             server.shutdown();

@@ -19,7 +19,9 @@ final class VerisignMdnsFormEncoder implements Encoder {
            + "</urn2:resourceRecord>";
 
     private static final String GET_ZONE_LIST_ELEMENT =
-            "<ns3:getZoneList xmlns='urn:com:verisign:dnsa:messaging:schema:1' xmlns:ns2='urn:com:verisign:dnsa:auth:schema:1' xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
+            "<ns3:getZoneList xmlns='urn:com:verisign:dnsa:messaging:schema:1' "
+                                     + "xmlns:ns2='urn:com:verisign:dnsa:auth:schema:1' "
+                                     + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
                     + "<ns3:listPagingInfo>"
                         + "<ns3:pageNumber>%s</ns3:pageNumber>"
                         + "<ns3:pageSize>%s</ns3:pageSize>"
