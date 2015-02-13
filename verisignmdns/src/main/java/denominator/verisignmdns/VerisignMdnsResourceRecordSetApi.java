@@ -117,9 +117,16 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         rDataForUpdate.retainAll(rDataFromInputRRSet);
         rDataForDelete.removeAll(rDataForUpdate);
         rDataFromInputRRSet.removeAll(rDataForUpdate);
-        deleteMdnsRecords(mdnsRDataMap, rDataForDelete);
-        updateMdnsRecords(mdnsRDataMap, rDataForUpdate, "" + rrset.ttl());
-        api.createResourceRecords(domainName, rrset.type(), rrset.name(), "" + ttlInt, new ArrayList<String>(rDataFromInputRRSet));
+        if (!rDataForDelete.isEmpty()) {
+            deleteMdnsRecords(mdnsRDataMap, rDataForDelete);
+        }
+        if (!rDataForUpdate.isEmpty()) {
+            updateMdnsRecords(mdnsRDataMap, rDataForUpdate, "" + rrset.ttl());
+        }
+        if (!rDataFromInputRRSet.isEmpty()) {
+            api.createResourceRecords(domainName, rrset.type(), rrset.name(), "" + ttlInt, new ArrayList<String>(
+                    rDataFromInputRRSet));
+        }
     }
     
     @Override
