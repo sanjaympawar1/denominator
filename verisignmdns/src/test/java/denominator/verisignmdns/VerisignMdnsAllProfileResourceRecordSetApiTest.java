@@ -31,9 +31,9 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
         server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.play();
         try {
-            VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
+            VerisignMdnsAllProfileResourceRecordSetApi verisignMdnsAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
-            Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterateByNameAndType(
+            Iterator<ResourceRecordSet<?>> actulResult = verisignMdnsAllProfileResourceRecordSetApi.iterateByNameAndType(
                     VALID_OWNER1, VALID_RR_TYPE_CNAME);
             assertNotNull(actulResult);
 
@@ -62,9 +62,9 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
         server.enqueue(new MockResponse().setBody(rrListValildResponse));
         server.play();
         try {
-            VerisignMdnsAllProfileResourceRecordSetApi vrsnAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
+            VerisignMdnsAllProfileResourceRecordSetApi verisignMdnsAllProfileResourceRecordSetApi = mockAllProfileResourceRecordSetApi(server
                     .getPort());
-            Iterator<ResourceRecordSet<?>> actulResult = vrsnAllProfileResourceRecordSetApi.iterator();
+            Iterator<ResourceRecordSet<?>> actulResult = verisignMdnsAllProfileResourceRecordSetApi.iterator();
             assertNotNull(actulResult);
 
             ResourceRecordSet<?> rrs = actulResult.next();

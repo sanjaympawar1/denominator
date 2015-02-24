@@ -65,7 +65,7 @@ public class VerisignMdnsProvider extends BasicProvider {
         return profileToRecordTypes;
     }
 
-    @dagger.Module(injects = DNSApiManager.class, complete = false, // denominator.Provider
+    @dagger.Module(injects = DNSApiManager.class, complete = false,
     includes = { NothingToClose.class, GeoUnsupported.class, WeightedUnsupported.class, FeignModule.class })
     public static final class Module {
 
@@ -103,7 +103,7 @@ public class VerisignMdnsProvider extends BasicProvider {
 
         @Singleton
         @Provides
-        VerisignMdns vrsnMdns(Feign feign, VerisignMdnsTarget target) {
+        VerisignMdns verisignMdns(Feign feign, VerisignMdnsTarget target) {
             return feign.newInstance(target);
         }
     }

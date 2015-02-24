@@ -7,12 +7,8 @@ import java.util.Map;
 import javax.inject.Provider;
 import denominator.Credentials;
 
-class VerisignMdnsUtils {
+final class VerisignMdnsUtils {
 
-    /**
-     * Converts Provider<Credentials> object into Map<String,String> ie
-     * credential name, credential value.
-     */
     static Map<String, String> getMapOfCredentials(Provider<Credentials> credentials) {
         Map<String, String> result = new LinkedHashMap<String, String>();
         if (credentials != null) {

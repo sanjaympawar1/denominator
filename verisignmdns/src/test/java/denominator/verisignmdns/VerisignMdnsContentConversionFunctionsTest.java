@@ -34,7 +34,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     @Test
     public void convertMdnsNaptrRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -47,7 +47,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     @Test
     public void convertMdnsSrvRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMDNSRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));

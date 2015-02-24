@@ -30,7 +30,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         int pageCounter = 1;
         List<Record> tempList;
         do {
-            tempList = api.getResourceRecordsList(domainName, pageCounter, DEFAULT_PAGE_SIZE);
+            tempList = api.getResourceRecords(domainName, pageCounter, DEFAULT_PAGE_SIZE);
             recordList.addAll(tempList);
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
@@ -41,18 +41,15 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
     protected void put(Filter<ResourceRecordSet<?>> valid, ResourceRecordSet<?> rrset) {
-        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void put(ResourceRecordSet<?> rrset) {
-        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
@@ -67,13 +64,11 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public ResourceRecordSet<?> getByNameTypeAndQualifier(String name, String type, String qualifier) {
-        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteByNameTypeAndQualifier(String name, String type, String qualifier) {
-        // @TODO IMPLEMENT -- in future development phase /////////
         throw new UnsupportedOperationException();
     }
 
@@ -85,7 +80,6 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
     static class Factory implements denominator.AllProfileResourceRecordSetApi.Factory {
         private VerisignMdns api;
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Inject
         Factory(VerisignMdns api) {
             this.api = api;
@@ -102,7 +96,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         int pageCounter = 1;
         List<Record> tempList;
         do {
-            tempList = api.getResourceRecordsListForNameAndType(domainName, name, type, pageCounter,
+            tempList = api.getResourceRecords(domainName, name, type, pageCounter,
                     DEFAULT_PAGE_SIZE);
             recordList.addAll(tempList);
             pageCounter++;

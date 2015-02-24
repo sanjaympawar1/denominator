@@ -2,6 +2,7 @@ package denominator.verisignmdns;
 
 import static java.lang.String.format;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import feign.codec.EncodeException;
 import feign.codec.Encoder;
 
 final class VerisignMdnsFormEncoder implements Encoder {
-    private static final String RR_EMENENT =
+    private static final String RR_ELEMENT =
            "<urn2:resourceRecord allowanyIP='false'>"
                     + "<urn2:owner>%s</urn2:owner>"
                     + "<urn2:type>%s</urn2:type>"
@@ -29,11 +30,11 @@ final class VerisignMdnsFormEncoder implements Encoder {
              + "</ns3:getZoneList>";
 
     @Override
+    @SuppressWarnings("unchecked")
     public void encode(Object object, RequestTemplate template) throws EncodeException {
-        @SuppressWarnings("unchecked")
         Map<String, ?> formParams = Map.class.cast(object);
         if (formParams.containsKey("recordIdList")) {
-            template.body(encodeDeleteRecords((String) formParams.get("zonename"),
+            template.body(encodeDeleteRecords((String) formParams.get("zoneName"),
                     (List<String>) formParams.get("recordIdList")));
         } else if (formParams.containsKey("rdataList")) {
             template.body(encodeCreateRecords(formParams));
@@ -42,9 +43,9 @@ final class VerisignMdnsFormEncoder implements Encoder {
         }
     }
 
-    static String encodeDeleteRecords(String zonename, List<String> recordIdList) {
+    static String encodeDeleteRecords(String zoneName, Collection<String> recordIdList) {
         StringBuilder sb = new StringBuilder("<urn2:deleteResourceRecords>");
-        sb.append(format("<urn2:domainName>%s</urn2:domainName>", zonename));
+        sb.append(format("<urn2:domainName>%s</urn2:domainName>", zoneName));
         for (String recordId : recordIdList) {
             sb.append(format("<urn2:resourceRecordId>%s</urn2:resourceRecordId>", recordId));
         }
@@ -52,15 +53,16 @@ final class VerisignMdnsFormEncoder implements Encoder {
         return sb.toString();
     }
 
+    @SuppressWarnings("unchecked")
     static String encodeCreateRecords(Map<String, ?> formParams) {
         StringBuilder sb = new StringBuilder("<urn2:createResourceRecords>");
-        sb.append(format("<urn2:domainName>%s</urn2:domainName>", (String)formParams.get("zonename")));
+        sb.append(format("<urn2:domainName>%s</urn2:domainName>", (String)formParams.get("zoneName")));
         String type = (String)formParams.get("type");
         String name = (String)formParams.get("name");
-        String ttl = (String)formParams.get("ttl");
+        Integer ttl = (Integer)formParams.get("ttl");
         List<String> rdataList = (List<String>)formParams.get("rdataList");
         for (String rdata : rdataList) {
-            sb.append(format(RR_EMENENT, name, type, ttl, rdata));
+            sb.append(format(RR_ELEMENT, name, type, ttl, rdata));
         }
         sb.append("</urn2:createResourceRecords>");
         return sb.toString();

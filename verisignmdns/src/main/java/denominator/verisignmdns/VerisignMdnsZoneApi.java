@@ -23,7 +23,7 @@ final class VerisignMdnsZoneApi implements denominator.ZoneApi {
         int pageCounter = 1;
         List<Zone> tempResult;
         do {
-            tempResult = api.getZonesForUser(pageCounter, DEFAULT_PAGE_SIZE);
+            tempResult = api.getZones(pageCounter, DEFAULT_PAGE_SIZE);
             result.addAll(tempResult);
             pageCounter++;
         } while(tempResult.size() >= DEFAULT_PAGE_SIZE);

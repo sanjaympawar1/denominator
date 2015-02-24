@@ -13,24 +13,24 @@ import feign.RequestLine;
 interface VerisignMdns {
 
     @RequestLine("POST")
-    List<Zone> getZonesForUser(@Named("zoneListPage") int page, @Named("pageSize") int pageSize);
+    List<Zone> getZones(@Named("zoneListPage") int page, @Named("pageSize") int pageSize);
 
     @RequestLine("POST")
     @Body("<urn2:getResourceRecordList>"
-            + "<urn2:domainName>{zonename}</urn2:domainName>"
+            + "<urn2:domainName>{zoneName}</urn2:domainName>"
             + "<urn2:listPagingInfo>"
                 + "<urn2:pageNumber>{page}</urn2:pageNumber>"
                 + "<urn2:pageSize>{pageSize}</urn2:pageSize>"
             + "</urn2:listPagingInfo>"
          + "</urn2:getResourceRecordList>")
-    List<Record> getResourceRecordsList(@Named("zonename") String zonename, @Named("page") int page,
+    List<Record> getResourceRecords(@Named("zoneName") String zoneName, @Named("page") int page,
             @Named("pageSize") int pageSize);
 
     @RequestLine("POST")
     @Body("<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' "
                             + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
                             + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'>"
-            + "<ns3:domainName>{zonename}</ns3:domainName>"
+            + "<ns3:domainName>{zoneName}</ns3:domainName>"
             + "<ns3:resourceRecordType>{type}</ns3:resourceRecordType>"
             + "<ns3:owner>{name}</ns3:owner>"
             + "<ns3:listPagingInfo>"
@@ -38,7 +38,7 @@ interface VerisignMdns {
                 + "<ns3:pageSize>{pageSize}</ns3:pageSize>"
             + "</ns3:listPagingInfo>"
            + "</ns3:getResourceRecordList>")
-    List<Record> getResourceRecordsListForNameAndType(@Named("zonename") String zonename, @Named("name") String name, @Named("type") String type,
+    List<Record> getResourceRecords(@Named("zoneName") String zoneName, @Named("name") String name, @Named("type") String type,
              @Named("page") int page, @Named("pageSize") int pageSize);
 
     @RequestLine("POST")
@@ -48,16 +48,16 @@ interface VerisignMdns {
     List<Record> getResourceRecordByQualifier(@Named("id") String id);
 
     @RequestLine("POST")
-    void createResourceRecords(@Named("zonename") String zonename,
+    void createResourceRecords(@Named("zoneName") String zoneName,
             @Named("type") String type, @Named("name") String name,
-            @Named("ttl") String ttl, @Named("rdataList") List<String> rdata);
+            @Named("ttl") int ttl, @Named("rdataList") List<String> rdata);
 
     @RequestLine("POST")
-    void deleteRecourceRecords(@Named("zonename") String zonename, @Named("recordIdList") List<String> recordIdList);
+    void deleteRecourceRecords(@Named("zoneName") String zoneName, @Named("recordIdList") List<String> recordIdList);
 
     @RequestLine("POST")
     @Body("<urn2:updateResourceRecord>"
-            + "<urn2:domainName>{zonename}</urn2:domainName>" 
+            + "<urn2:domainName>{zoneName}</urn2:domainName>" 
             + "<urn2:resourceRecord allowanyIP=\"false\">"
                 + "<urn2:resourceRecordId>{id}</urn2:resourceRecordId>"
                 + "<urn2:owner>{name}</urn2:owner>"
@@ -66,8 +66,8 @@ interface VerisignMdns {
                 + "<urn2:rData>{rdata}</urn2:rData>"
             + "</urn2:resourceRecord>"
          + "</urn2:updateResourceRecord>")
-    void updateRecord(@Named("zonename") String zonename, @Named("id") String id, @Named("name") String name,
-            @Named("type") String type, @Named("ttl") String ttl, @Named("rdata") String rData);
+    void updateResourceRecord(@Named("zoneName") String zoneName, @Named("id") String id, @Named("name") String name,
+            @Named("type") String type, @Named("ttl") int ttl, @Named("rdata") String rdata);
 
     static class Record implements Comparable<Record>{
         String id;
