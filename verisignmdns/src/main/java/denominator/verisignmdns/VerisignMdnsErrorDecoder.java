@@ -76,7 +76,7 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-            if (qName.endsWith(":reason")) {
+            if (qName.endsWith("reason")) {
                 try {
                     Integer tempCode = MDNS_ERROR_TO_INT_CODE_MAP.get(attributes.getValue("code"));
                     code = tempCode.intValue();

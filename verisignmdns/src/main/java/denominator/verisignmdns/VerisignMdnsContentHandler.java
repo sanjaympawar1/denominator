@@ -28,8 +28,8 @@ final class VerisignMdnsContentHandler {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attrs) {
-            if (qName != null && qName.endsWith(":domainName")) {
+        public void startElement(String uri, String name, String qName, Attributes attrs) {
+            if (qName != null && qName.endsWith("domainName")) {
                 domainElementFound = true;
             }
         }
@@ -42,8 +42,8 @@ final class VerisignMdnsContentHandler {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (qName != null && qName.endsWith(":domainName")) {
+        public void endElement(String uri, String name, String qName) throws SAXException {
+            if (qName != null && qName.endsWith("domainName")) {
                 domainElementFound = false;
             }
         }
@@ -66,8 +66,8 @@ final class VerisignMdnsContentHandler {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attrs) {
-            if (qName.endsWith(":resourceRecord")) {
+        public void startElement(String uri, String name, String qName, Attributes attrs) {
+            if (qName.endsWith("resourceRecord")) {
                 rr = new Record();
                 inResourceRecordSet = true;
                 currentText = new StringBuilder();
@@ -76,24 +76,24 @@ final class VerisignMdnsContentHandler {
 
         @Override
         public void endElement(String uri, String name, String qName) {
-            if (qName.endsWith(":resourceRecord")) {
+            if (qName.endsWith("resourceRecord")) {
                 rrs.add(rr);
                 inResourceRecordSet = false;
                 currentText = null;
             }
-            if (inResourceRecordSet && qName.endsWith(":resourceRecordId")) {
+            if (inResourceRecordSet && qName.endsWith("resourceRecordId")) {
                 rr.id = currentText.toString().trim();
             }
-            if (inResourceRecordSet && qName.endsWith(":owner")) {
+            if (inResourceRecordSet && qName.endsWith("owner")) {
                 rr.name = currentText.toString().trim();
             }
-            if (inResourceRecordSet && qName.endsWith(":type")) {
+            if (inResourceRecordSet && qName.endsWith("type")) {
                 rr.type = currentText.toString().trim();
             }
-            if (inResourceRecordSet && qName.endsWith(":ttl")) {
+            if (inResourceRecordSet && qName.endsWith("ttl")) {
                 rr.ttl = Integer.parseInt(currentText.toString());
             }
-            if (inResourceRecordSet && qName.endsWith(":rData")) {
+            if (inResourceRecordSet && qName.endsWith("rData")) {
                 rr.rdata = currentText.toString();
             }
             currentText = new StringBuilder();
