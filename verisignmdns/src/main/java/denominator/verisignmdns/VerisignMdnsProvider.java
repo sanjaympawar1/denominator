@@ -48,7 +48,7 @@ public class VerisignMdnsProvider extends BasicProvider {
     @Override
     public Set<String> basicRecordTypes() {
         Set<String> types = new LinkedHashSet<String>();
-        types.addAll(Arrays.asList("A", "AAAA", "CNAME", "MX", "NS","NAPTR", "PTR", "SRV", "TXT", "DS"));
+        types.addAll(Arrays.asList("A", "AAAA", "CNAME", "MX", "NS", "NAPTR", "PTR", "SRV", "TXT", "DS"));
         return types;
     }
 
@@ -65,8 +65,8 @@ public class VerisignMdnsProvider extends BasicProvider {
         return profileToRecordTypes;
     }
 
-    @dagger.Module(injects = DNSApiManager.class, complete = false,
-    includes = { NothingToClose.class, GeoUnsupported.class, WeightedUnsupported.class, FeignModule.class })
+    @dagger.Module(injects = DNSApiManager.class, complete = false, includes = {NothingToClose.class,
+            GeoUnsupported.class, WeightedUnsupported.class, FeignModule.class})
     public static final class Module {
 
         @Provides
@@ -96,9 +96,9 @@ public class VerisignMdnsProvider extends BasicProvider {
         }
     }
 
-    @dagger.Module(//
-    injects = { VerisignMdnsResourceRecordSetApi.Factory.class }, complete = false, overrides = true, includes = {
-            Feign.Defaults.class, XMLCodec.class })
+    @dagger.Module(
+            injects = {VerisignMdnsResourceRecordSetApi.Factory.class}, complete = false, overrides = true,
+            includes = {Feign.Defaults.class, XMLCodec.class})
     public static final class FeignModule {
 
         @Singleton
@@ -109,9 +109,9 @@ public class VerisignMdnsProvider extends BasicProvider {
     }
 
     @dagger.Module(//
-    injects = { Encoder.class, Decoder.class, ErrorDecoder.class },//
-    overrides = true, // ErrorDecoder
-    complete = false, addsTo = Feign.Defaults.class//
+            injects = {Encoder.class, Decoder.class, ErrorDecoder.class},//
+            overrides = true, // ErrorDecoder
+            complete = false, addsTo = Feign.Defaults.class//
     )
     static final class XMLCodec {
         @Provides
@@ -133,4 +133,3 @@ public class VerisignMdnsProvider extends BasicProvider {
         }
     }
 }
-

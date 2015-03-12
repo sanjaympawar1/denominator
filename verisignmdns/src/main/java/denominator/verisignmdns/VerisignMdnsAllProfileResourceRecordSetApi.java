@@ -34,8 +34,8 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
             recordList.addAll(tempList);
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList)
-                .iterator();
+        Iterator<ResourceRecordSet<?>> result =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList).iterator();
         return result;
     }
 
@@ -57,8 +57,9 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
-                getByNameAndTypeFromMDNS(name, type)).iterator();
+        Iterator<ResourceRecordSet<?>> result =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
+                        getByNameAndTypeFromMDNS(name, type)).iterator();
         return result;
     }
 
@@ -90,18 +91,16 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
             return new VerisignMdnsAllProfileResourceRecordSetApi(idOrName, api);
         }
     }
-    
+
     private List<Record> getByNameAndTypeFromMDNS(String name, String type) {
         List<Record> recordList = new ArrayList<Record>();
         int pageCounter = 1;
         List<Record> tempList;
         do {
-            tempList = api.getResourceRecords(domainName, name, type, pageCounter,
-                    DEFAULT_PAGE_SIZE);
+            tempList = api.getResourceRecords(domainName, name, type, pageCounter, DEFAULT_PAGE_SIZE);
             recordList.addAll(tempList);
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
         return recordList;
     }
 }
-

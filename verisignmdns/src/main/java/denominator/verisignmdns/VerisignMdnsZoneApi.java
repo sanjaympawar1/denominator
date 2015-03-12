@@ -11,7 +11,7 @@ import denominator.model.Zone;
 final class VerisignMdnsZoneApi implements denominator.ZoneApi {
     private static final int DEFAULT_PAGE_SIZE = 500;
     private final VerisignMdns api;
-    
+
     @Inject
     VerisignMdnsZoneApi(VerisignMdns api) {
         this.api = api;
@@ -26,8 +26,7 @@ final class VerisignMdnsZoneApi implements denominator.ZoneApi {
             tempResult = api.getZones(pageCounter, DEFAULT_PAGE_SIZE);
             result.addAll(tempResult);
             pageCounter++;
-        } while(tempResult.size() >= DEFAULT_PAGE_SIZE);
+        } while (tempResult.size() >= DEFAULT_PAGE_SIZE);
         return result.iterator();
     }
 }
-

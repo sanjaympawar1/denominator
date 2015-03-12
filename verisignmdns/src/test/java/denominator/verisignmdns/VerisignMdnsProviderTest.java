@@ -41,4 +41,3 @@ public class VerisignMdnsProviderTest {
         assertEquals(actualResult, VALID_URL);
     }
 }
-

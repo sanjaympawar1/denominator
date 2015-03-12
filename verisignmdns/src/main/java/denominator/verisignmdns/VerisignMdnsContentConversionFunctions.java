@@ -22,16 +22,16 @@ final class VerisignMdnsContentConversionFunctions {
     static LinkedHashSet<ResourceRecordSet<?>> getResourceRecordSet(List<Record> mdnsRecordList) {
         LinkedHashSet<ResourceRecordSet<?>> result = new LinkedHashSet<ResourceRecordSet<?>>();
         for (Record rr : mdnsRecordList) {
-                result.add(convertMdnsRecordToResourceRecordSet(rr));
-            }
+            result.add(convertMdnsRecordToResourceRecordSet(rr));
+        }
         return result;
     }
-    
+
 
     /**
-     * MDNS does not have ResourceRecordSet but only ResourceRecord
-     * Here we merge MDNS ResourceRecords by sorting them by Name(owner) and type.
-     * Sorting simplifies building of ResourceRecordSet.
+     * MDNS does not have ResourceRecordSet but only ResourceRecord Here we merge MDNS
+     * ResourceRecords by sorting them by Name(owner) and type. Sorting simplifies building of
+     * ResourceRecordSet.
      */
     static Set<ResourceRecordSet<?>> getMergedResourceRecordToRRSet(List<Record> mdnsRecordList) {
         Set<ResourceRecordSet<?>> result = new LinkedHashSet<ResourceRecordSet<?>>();
@@ -52,7 +52,7 @@ final class VerisignMdnsContentConversionFunctions {
             } else {
                 builder.add(Util.toMap(mdnsRecord.type, mdnsRecord.rdata));
             }
-            if(currentTtl > mdnsRecord.ttl) {
+            if (currentTtl > mdnsRecord.ttl) {
                 builder.ttl(mdnsRecord.ttl);
                 currentTtl = mdnsRecord.ttl;
             }
@@ -62,12 +62,11 @@ final class VerisignMdnsContentConversionFunctions {
         }
         return result;
     }
-    
+
     private static Builder<Map<String, Object>> getResourceRecordSetBuilder(Record mdnsRecord) {
-        Builder<Map<String, Object>> builder = ResourceRecordSet.builder().name(mdnsRecord.name).type(mdnsRecord.type)
-                .ttl(mdnsRecord.ttl);
+        Builder<Map<String, Object>> builder =
+                ResourceRecordSet.builder().name(mdnsRecord.name).type(mdnsRecord.type).ttl(mdnsRecord.ttl);
         builder.add(Util.toMap(mdnsRecord.type, mdnsRecord.rdata));
         return builder;
     }
 }
-

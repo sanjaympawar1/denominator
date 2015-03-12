@@ -62,8 +62,7 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
 
     static class VerisignMdnsError extends DefaultHandler implements ContentHandlerWithResult<VerisignMdnsError> {
         @Inject
-        VerisignMdnsError() {
-        }
+        VerisignMdnsError() {}
 
         private StringBuilder currentText = new StringBuilder();
         private int code = -1;
@@ -102,4 +101,3 @@ final class VerisignMdnsErrorDecoder implements ErrorDecoder {
     }
 
 }
-

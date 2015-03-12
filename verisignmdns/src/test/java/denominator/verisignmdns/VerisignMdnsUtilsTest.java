@@ -25,4 +25,3 @@ public class VerisignMdnsUtilsTest {
         assertEquals(actualResult.get("password"), VerisignMdnsTest.TEST_PASSWORD);
     }
 }
-

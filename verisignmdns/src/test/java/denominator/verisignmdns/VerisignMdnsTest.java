@@ -1,6 +1,3 @@
-/**
- *
- */
 package denominator.verisignmdns;
 
 import static denominator.CredentialsConfiguration.credentials;

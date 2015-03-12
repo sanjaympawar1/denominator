@@ -38,8 +38,8 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
             recordList.addAll(tempList);
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList)
-                .iterator();
+        Iterator<ResourceRecordSet<?>> result =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList).iterator();
         return result;
     }
 
@@ -47,8 +47,9 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
-        Iterator<ResourceRecordSet<?>> result = VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
-                getByNameAndTypefromMDNS(name, type)).iterator();
+        Iterator<ResourceRecordSet<?>> result =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
+                        getByNameAndTypefromMDNS(name, type)).iterator();
         return result;
     }
 
@@ -70,11 +71,10 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
     }
 
     /**
-     * Put should replace entire existing RRSet with new RRSet (by deleting existing RRSet)
-     * However MDNS has latency in delete operation, i.e. the deleted record can cause error
-     * while inserting new record with similar attributes.
-     * Thus we are trying to minimize delete operations by using update operation for
-     * existing ResourceRecords in MDNS.  
+     * Put should replace entire existing RRSet with new RRSet (by deleting existing RRSet) However
+     * MDNS has latency in delete operation, i.e. the deleted record can cause error while inserting
+     * new record with similar attributes. Thus we are trying to minimize delete operations by using
+     * update operation for existing ResourceRecords in MDNS.
      */
     @Override
     public void put(ResourceRecordSet<?> rrset) {
@@ -82,7 +82,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         checkNotNull(rrset.name(), "Resource Record Name was null");
         checkNotNull(rrset.type(), "Resource Record Type was null");
         // deleting existing RRs
-        List<Record> mdnsRecords=  getByNameAndTypefromMDNS(rrset.name(), rrset.type());
+        List<Record> mdnsRecords = getByNameAndTypefromMDNS(rrset.name(), rrset.type());
         int ttlInt = 86000;
         Integer ttlRRSet = rrset.ttl();
         if (ttlRRSet != null) {
@@ -111,7 +111,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
                     rDataFromInputRRSet));
         }
     }
-    
+
     @Override
     public void deleteByNameAndType(String name, String type) {
         List<Record> recordList = getByNameAndTypefromMDNS(name, type);
@@ -157,8 +157,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         int pageCounter = 1;
         List<Record> tempList;
         do {
-            tempList = api.getResourceRecords(domainName, name, type, pageCounter,
-                    DEFAULT_PAGE_SIZE);
+            tempList = api.getResourceRecords(domainName, name, type, pageCounter, DEFAULT_PAGE_SIZE);
             recordList.addAll(tempList);
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
@@ -176,11 +175,10 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         List<String> recordIdList = new ArrayList<String>();
         for (String rData : rDataSet) {
             Record rr = existingRRMap.get(rData);
-                recordIdList.add(rr.id);
+            recordIdList.add(rr.id);
         }
         if (!recordIdList.isEmpty()) {
             api.deleteRecourceRecords(domainName, recordIdList);
         }
     }
 }
-

@@ -56,11 +56,11 @@ final class VerisignMdnsFormEncoder implements Encoder {
     @SuppressWarnings("unchecked")
     static String encodeCreateRecords(Map<String, ?> formParams) {
         StringBuilder sb = new StringBuilder("<urn2:createResourceRecords>");
-        sb.append(format("<urn2:domainName>%s</urn2:domainName>", (String)formParams.get("zoneName")));
-        String type = (String)formParams.get("type");
-        String name = (String)formParams.get("name");
-        Integer ttl = (Integer)formParams.get("ttl");
-        List<String> rdataList = (List<String>)formParams.get("rdataList");
+        sb.append(format("<urn2:domainName>%s</urn2:domainName>", (String) formParams.get("zoneName")));
+        String type = (String) formParams.get("type");
+        String name = (String) formParams.get("name");
+        Integer ttl = (Integer) formParams.get("ttl");
+        List<String> rdataList = (List<String>) formParams.get("rdataList");
         for (String rdata : rdataList) {
             sb.append(format(RR_ELEMENT, name, type, ttl, rdata));
         }
@@ -72,4 +72,3 @@ final class VerisignMdnsFormEncoder implements Encoder {
         return format(GET_ZONE_LIST_ELEMENT, formParams.get("zoneListPage"), formParams.get("pageSize"));
     }
 }
-

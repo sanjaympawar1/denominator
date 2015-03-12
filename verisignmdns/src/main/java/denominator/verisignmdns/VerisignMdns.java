@@ -77,7 +77,7 @@ interface VerisignMdns {
         String rdata;
 
        /**
-        * MDNS does not support ResourceRecordSet concept.
+        * MDNS SOAP response does not support ResourceRecordSet concept.
         * GetResourceRecord web-service command orders ResourceRecords only by 'owner'(name)
         * To create ResourceRecordSet we need to sort by owner+type
         */

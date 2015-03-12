@@ -17,11 +17,11 @@ final class VerisignMdnsContentHandler {
 
     static class ZoneListHandler extends DefaultHandler implements ContentHandlerWithResult<List<Zone>> {
         @Inject
-        ZoneListHandler() {
-        }
+        ZoneListHandler() {}
 
         private final List<Zone> zones = new ArrayList<Zone>();
         private boolean domainElementFound = false;
+
         @Override
         public List<Zone> result() {
             return zones;
@@ -53,8 +53,7 @@ final class VerisignMdnsContentHandler {
         private final List<Record> rrs = new ArrayList<Record>();
 
         @Inject
-        RecordListHandler() {
-        }
+        RecordListHandler() {}
 
         private Record rr;
         private boolean inResourceRecordSet = false;
@@ -100,21 +99,19 @@ final class VerisignMdnsContentHandler {
         }
 
         /**
-         * This method is to ensure all space characters are accounted for while
-         * processing rData
+         * This method is to ensure all space characters are accounted for while processing rData
          */
         @Override
         public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-                String tempStr = new String(ch, start, length);
-                currentText.append(tempStr);
+            String tempStr = new String(ch, start, length);
+            currentText.append(tempStr);
         }
 
         @Override
         public void characters(char ch[], int start, int length) throws SAXException {
             if (inResourceRecordSet && length > 0) {
-                   currentText.append(new String(ch, start, length));
+                currentText.append(new String(ch, start, length));
             }
         }
     }
 }
-

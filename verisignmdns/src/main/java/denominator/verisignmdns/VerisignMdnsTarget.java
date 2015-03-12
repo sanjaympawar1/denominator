@@ -42,8 +42,8 @@ final class VerisignMdnsTarget implements Target<VerisignMdns> {
     @Override
     public Request apply(RequestTemplate input) {
         input.insert(0, url());
-        input.body(format(SOAP_TEMPLATE, VerisignMdnsUtils.getUsername(credentials), VerisignMdnsUtils.getPassword(credentials),
-                new String(input.body(), UTF_8)));
+        input.body(format(SOAP_TEMPLATE, VerisignMdnsUtils.getUsername(credentials),
+                VerisignMdnsUtils.getPassword(credentials), new String(input.body(), UTF_8)));
         input.header("Host", URI.create(input.url()).getHost());
         input.header("Content-Type", "application/soap+xml");
         return input.request();
@@ -66,4 +66,3 @@ final class VerisignMdnsTarget implements Target<VerisignMdns> {
                 + "<S:Body>" + "%s" + "</S:Body>" 
             + "</S:Envelope>";
 }
-

@@ -13,12 +13,11 @@ final class VerisignMdnsException extends FeignException {
     }
 
     /**
-     * @see denominator.verisignmdns.VerisignMdnsErrorDecoder for MDNS response
-     * error messages and error codes
+     * @see denominator.verisignmdns.VerisignMdnsErrorDecoder for MDNS response error messages and
+     *      error codes
      */
     public int code() {
         return code;
     }
 
 }
-

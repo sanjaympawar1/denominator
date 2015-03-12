@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
 import org.testng.annotations.Test;
 
 import denominator.common.Util;
@@ -34,7 +33,8 @@ public class VerisignMdnsContentConversionFunctionsTest {
     @Test
     public void convertMdnsNaptrRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs =
+                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -47,7 +47,8 @@ public class VerisignMdnsContentConversionFunctionsTest {
     @Test
     public void convertMdnsSrvRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
-        ResourceRecordSet<?> rrs = VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
+        ResourceRecordSet<?> rrs =
+                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -61,8 +62,8 @@ public class VerisignMdnsContentConversionFunctionsTest {
     public void getResourceRecordSet() {
         List<Record> mDNSRecordList = new ArrayList<Record>();
         mDNSRecordList.add(VerisignMdnsTest.mockNaptrRecord());
-        Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionFunctions
-                .getResourceRecordSet(mDNSRecordList);
+        Set<ResourceRecordSet<?>> actualResult =
+                VerisignMdnsContentConversionFunctions.getResourceRecordSet(mDNSRecordList);
 
         assertNotNull(actualResult);
         assertEquals(mDNSRecordList.size(), actualResult.size());
@@ -76,8 +77,8 @@ public class VerisignMdnsContentConversionFunctionsTest {
         mDNSRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_TXT, VALID_RDATA1));
         mDNSRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_MX, VALID_RDATA_MX2));
 
-        Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionFunctions
-                .getMergedResourceRecordToRRSet(mDNSRecordList);
+        Set<ResourceRecordSet<?>> actualResult =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList);
 
         assertNotNull(actualResult);
         assertEquals(actualResult.size(), 3);
@@ -101,14 +102,13 @@ public class VerisignMdnsContentConversionFunctionsTest {
             }
         }
     }
-    
+
     @Test
     public void getMergedResourceRecordSetEmptyInput() {
         List<Record> mDNSRecordList = new ArrayList<Record>();
-        Set<ResourceRecordSet<?>> actualResult = VerisignMdnsContentConversionFunctions
-                .getMergedResourceRecordToRRSet(mDNSRecordList);
+        Set<ResourceRecordSet<?>> actualResult =
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList);
         assertNotNull(actualResult);
         assertEquals(actualResult.size(), 0);
     }
 }
-
