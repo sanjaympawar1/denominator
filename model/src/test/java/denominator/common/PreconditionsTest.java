@@ -1,41 +1,55 @@
 package denominator.common;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static denominator.common.Preconditions.checkArgument;
 import static denominator.common.Preconditions.checkNotNull;
 import static denominator.common.Preconditions.checkState;
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.testng.annotations.Test;
-
-@Test
 public class PreconditionsTest {
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "should be foo")
-    public void checkArgumentFormatted() {
-        checkArgument(false, "should be %s", "foo");
-    }
 
-    @Test
-    public void checkArgumentPass() {
-        checkArgument(true, "should be %s", "foo");
-    }
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = "should be foo")
-    public void checkStateFormatted() {
-        checkState(false, "should be %s", "foo");
-    }
+  @Test
+  public void checkArgumentFormatted() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("should be foo");
 
-    @Test
-    public void checkStatePass() {
-        checkState(true, "should be %s", "foo");
-    }
+    checkArgument(false, "should be %s", "foo");
+  }
 
-    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "should be foo")
-    public void checkNotNullFormatted() {
-        checkNotNull(null, "should be %s", "foo");
-    }
+  @Test
+  public void checkArgumentPass() {
+    checkArgument(true, "should be %s", "foo");
+  }
 
-    @Test
-    public void checkNotNullPass() {
-        assertEquals(checkNotNull("foo", "should be %s", "foo"), "foo");
-    }
+  @Test
+  public void checkStateFormatted() {
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("should be foo");
+
+    checkState(false, "should be %s", "foo");
+  }
+
+  @Test
+  public void checkStatePass() {
+    checkState(true, "should be %s", "foo");
+  }
+
+  @Test
+  public void checkNotNullFormatted() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("should be foo");
+
+    checkNotNull(null, "should be %s", "foo");
+  }
+
+  @Test
+  public void checkNotNullPass() {
+    assertThat(checkNotNull("foo", "should be %s", "foo")).isEqualTo("foo");
+  }
 }

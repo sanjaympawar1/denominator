@@ -1,19 +1,26 @@
 package denominator.model.rdata;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static denominator.model.ResourceRecordSets.mx;
 
-import org.testng.annotations.Test;
-
-@Test
 public class MXDataTest {
 
-    public void testGoodRecord() {
-    	mx("www.denominator.io.", "1 mx1.denominator.io.");
-    }    
-    
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = ".*record must have exactly two parts.*")
-    public void testMissingParts() {
-    	mx("www.denominator.io.", "1");
-    }
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
+  @Test
+  public void testGoodRecord() {
+    mx("www.denominator.io.", "1 mx1.denominator.io.");
+  }
+
+  @Test
+  public void testMissingParts() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("record must have exactly two parts");
+
+    mx("www.denominator.io.", "1");
+  }
 }

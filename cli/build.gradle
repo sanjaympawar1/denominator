@@ -1,21 +1,11 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
-apply from: rootProject.file('dagger.gradle')
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-targetCompatibility = JavaVersion.VERSION_1_6
-
-eclipse {
-  classpath {
-    downloadSources = true
-    downloadJavadoc = true
-  }
-}
+sourceCompatibility = 1.6
 
 dependencies {
   compile      project(':denominator-core')
-  compile     'io.airlift:airline:0.5'
-  compile     'org.yaml:snakeyaml:1.12'
+  compile     'io.airlift:airline:0.7'
+  compile     'org.yaml:snakeyaml:1.15'
   // TODO: the following should really only be in the fatJar
   compile      project(':denominator-dynect')
   compile      project(':denominator-ultradns')
@@ -23,10 +13,11 @@ dependencies {
   compile      project(':denominator-clouddns')
   compile      project(':denominator-designate')
   compile      project(':denominator-discoverydns')
-  compile      project(':denominator-verisignmdns')
-  
-  testCompile 'org.testng:testng:6.8.5'
-  testCompile 'com.google.mockwebserver:mockwebserver:20130706'
+  testCompile  project(':denominator-model').sourceSets.test.output
+  testCompile  project(':denominator-core').sourceSets.test.output
+  testCompile 'junit:junit:4.12'
+  testCompile 'com.squareup.okhttp:mockwebserver:2.2.0'
+  testCompile 'org.assertj:assertj-core:1.7.1'
 }
 
 // create a self-contained jar that is executable
@@ -73,6 +64,12 @@ task fatJar(dependsOn: classes, type: Jar) {
     srcFile.setExecutable(true, true)
   }
 }
+
+configurations {
+  fat
+}
+
+nebula.plugin.publishing.component.CustomComponentPlugin.addArtifact(project, 'fat', fatJar)
 
 artifacts {
   archives fatJar

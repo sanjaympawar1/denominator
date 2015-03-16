@@ -1,14 +1,9 @@
 package denominator.route53;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.ReadOnlyLiveTest;
 
-import denominator.BaseReadOnlyLiveTest;
+@UseTestGraph(Route53TestGraph.class)
+public class Route53ReadOnlyLiveTest extends ReadOnlyLiveTest {
 
-@Test
-public class Route53ReadOnlyLiveTest extends BaseReadOnlyLiveTest {
-    @BeforeClass
-    private void setUp() {
-        manager = new Route53Connection().manager;
-    }
 }

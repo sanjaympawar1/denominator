@@ -1,14 +1,9 @@
 package denominator.ultradns;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.ReadOnlyLiveTest;
 
-import denominator.BaseReadOnlyLiveTest;
+@UseTestGraph(UltraDNSTestGraph.class)
+public class UltraDNSReadOnlyLiveTest extends ReadOnlyLiveTest {
 
-@Test
-public class UltraDNSReadOnlyLiveTest extends BaseReadOnlyLiveTest {
-    @BeforeClass
-    private void setUp() {
-        manager = new UltraDNSConnection().manager;
-    }
 }

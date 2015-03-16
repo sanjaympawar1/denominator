@@ -1,123 +1,117 @@
 package denominator.clouddns;
 
-import static dagger.Provides.Type.SET;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-
-import javax.inject.Inject;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 
-import dagger.Module;
-import dagger.ObjectGraph;
-import dagger.Provides;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
+
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.util.Arrays;
+
+import denominator.clouddns.RackspaceApis.CloudIdentity;
 import denominator.clouddns.RackspaceApis.TokenIdAndPublicURL;
-import feign.gson.GsonModule;
+import feign.Feign;
+import feign.Target.EmptyTarget;
+import feign.gson.GsonDecoder;
 
-@Test
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNull;
+
 public class KeystoneAccessAdapterTest {
-    @Inject
-    Gson gson;
 
-    @Module(includes = GsonModule.class, library = true, injects = KeystoneAccessAdapterTest.class)
-    static class AdapterBindings {
-        @SuppressWarnings("rawtypes")
-        @Provides(type = SET)
-        TypeAdapter tokenIdAndPublicURLDecoder() {
-            return new KeystoneAccessAdapter("rax:dns");
-        }
-    }
+  @Rule
+  public final MockWebServerRule server = new MockWebServerRule();
 
-    @BeforeClass
-    void setUp() {
-        ObjectGraph.create(new AdapterBindings()).inject(this);
-    }
+  CloudIdentity client = Feign.builder()
+      .decoder(
+          new GsonDecoder(Arrays.<TypeAdapter<?>>asList(new KeystoneAccessAdapter("rax:dns"))))
+      .target(EmptyTarget.create(CloudIdentity.class, "cloudidentity"));
 
-    @Test
-    public void publicURLFound() throws Throwable {
-        String nameThenType = ""//
-                + "            \"name\": \"cloudDNS\",\n" //
-                + "            \"endpoints\": [{\n" //
-                + "                \"tenantId\": \"1234\",\n" //
-                + "                \"publicURL\": \"https:\\/\\/dns.api.rackspacecloud.com\\/v1.0\\/1234\"\n" //
-                + "            }],\n" //
-                + "            \"type\": \"rax:dns\"\n";
+  @Test
+  public void publicURLFound() throws Exception {
+    server.enqueue(new MockResponse().setBody(ACCESS_HEADER
+                                              + "            \"name\": \"cloudDNS\",\n"
+                                              + "            \"endpoints\": [{\n"
+                                              + "                \"tenantId\": \"1234\",\n"
+                                              + "                \"publicURL\": \"https:\\/\\/dns.api.rackspacecloud.com\\/v1.0\\/1234\"\n"
+                                              + "            }],\n"
+                                              + "            \"type\": \"rax:dns\"\n"
+                                              + SERVICE + ACCESS_FOOTER));
 
-        TokenIdAndPublicURL tokenIdAndPublicUrl = gson.fromJson(ACCESS_HEADER + nameThenType + SERVICE + ACCESS_FOOTER,
-                TokenIdAndPublicURL.class);
+    TokenIdAndPublicURL result = client.passwordAuth(server.getUrl("/").toURI(), "u", "p");
 
-        assertEquals(tokenIdAndPublicUrl.tokenId, "1bcd122d87494f5ab39a185b9ec5ff73");
-        assertEquals(tokenIdAndPublicUrl.publicURL, "https://dns.api.rackspacecloud.com/v1.0/1234");
-    }
+    assertThat(result.tokenId).isEqualTo("1bcd122d87494f5ab39a185b9ec5ff73");
+    assertThat(result.publicURL)
+        .isEqualTo("https://dns.api.rackspacecloud.com/v1.0/1234");
+  }
 
-    @Test
-    public void noEndpoints() throws Throwable {
-        String noEndpoints = ""//
-                + "            \"name\": \"cloudDNS\",\n" //
-                + "            \"type\": \"rax:dns\"\n";
+  @Test
+  public void noEndpoints() throws Exception {
+    server.enqueue(new MockResponse().setBody(ACCESS_HEADER
+                                              + "            \"name\": \"cloudDNS\",\n"
+                                              + "            \"type\": \"rax:dns\"\n"
+                                              + SERVICE + ACCESS_FOOTER));
 
-        TokenIdAndPublicURL tokenIdAndPublicUrl = gson.fromJson(ACCESS_HEADER + noEndpoints + SERVICE + ACCESS_FOOTER,
-                TokenIdAndPublicURL.class);
+    TokenIdAndPublicURL result = client.passwordAuth(server.getUrl("/").toURI(), "u", "p");
 
-        assertEquals(tokenIdAndPublicUrl.tokenId, "1bcd122d87494f5ab39a185b9ec5ff73");
-        assertNull(tokenIdAndPublicUrl.publicURL);
-    }
+    assertThat(result.tokenId).isEqualTo("1bcd122d87494f5ab39a185b9ec5ff73");
+    assertNull(result.publicURL);
+  }
 
-    @Test
-    public void serviceNotFound() throws Throwable {
-        TokenIdAndPublicURL tokenIdAndPublicUrl = gson.fromJson(ACCESS_HEADER + SERVICE + ACCESS_FOOTER,
-                TokenIdAndPublicURL.class);
+  @Test
+  public void serviceNotFound() throws Exception {
+    server.enqueue(new MockResponse().setBody(ACCESS_HEADER + SERVICE + ACCESS_FOOTER));
 
-        assertEquals(tokenIdAndPublicUrl.tokenId, "1bcd122d87494f5ab39a185b9ec5ff73");
-        assertNull(tokenIdAndPublicUrl.publicURL);
-    }
+    TokenIdAndPublicURL result = client.passwordAuth(server.getUrl("/").toURI(), "u", "p");
 
-    @Test
-    public void noServices() throws Throwable {
-        TokenIdAndPublicURL tokenIdAndPublicUrl = gson.fromJson(ACCESS_HEADER + ACCESS_FOOTER,
-                TokenIdAndPublicURL.class);
+    assertThat(result.tokenId).isEqualTo("1bcd122d87494f5ab39a185b9ec5ff73");
+    assertNull(result.publicURL);
+  }
 
-        assertEquals(tokenIdAndPublicUrl.tokenId, "1bcd122d87494f5ab39a185b9ec5ff73");
-        assertNull(tokenIdAndPublicUrl.publicURL);
-    }
+  @Test
+  public void noServices() throws Exception {
+    server.enqueue(new MockResponse().setBody(ACCESS_HEADER + SERVICE + ACCESS_FOOTER));
 
-    @Test
-    public void noToken() throws Throwable {
-        TokenIdAndPublicURL tokenIdAndPublicUrl = gson.fromJson("{\n" //
-                + "    \"access\": {\n" //
-                + "        \"serviceCatalog\": [{\n"//
-                + ACCESS_FOOTER, TokenIdAndPublicURL.class);
+    TokenIdAndPublicURL result = client.passwordAuth(server.getUrl("/").toURI(), "u", "p");
 
-        assertNull(tokenIdAndPublicUrl);
-    }
+    assertThat(result.tokenId).isEqualTo("1bcd122d87494f5ab39a185b9ec5ff73");
+    assertNull(result.publicURL);
+  }
 
-    static final String TOKEN = ""//
-            + "        \"token\": {\n" //
-            + "            \"id\": \"1bcd122d87494f5ab39a185b9ec5ff73\",\n" //
-            + "            \"expires\": \"2013-07-01T10:13:55.109-05:00\",\n" //
-            + "            \"tenant\": {\n" //
-            + "                \"id\": \"1234\",\n" //
-            + "                \"name\": \"1234\"\n" //
-            + "            }\n" //
-            + "        },\n";
-    static final String ACCESS_HEADER = "{\n" //
-            + "    \"access\": {\n" //
-            + TOKEN //
-            + "        \"serviceCatalog\": [{\n";
-    static final String SERVICE = ""//
-            + "        }, {\n" //
-            + "            \"name\": \"cloudMonitoring\",\n" //
-            + "            \"endpoints\": [{\n" //
-            + "                \"tenantId\": \"1234\",\n" //
-            + "                \"publicURL\": \"https:\\/\\/monitoring.api.rackspacecloud.com\\/v1.0\\/1234\"\n" //
-            + "            }],\n" //
-            + "            \"type\": \"rax:monitor\"\n";
-    static final String ACCESS_FOOTER = ""//
-            + "        }]\n"//
-            + "    }\n" //
-            + "}";
+  @Test
+  public void noToken() throws Exception {
+    server.enqueue(new MockResponse().setBody("{\n"
+                                              + "    \"access\": {\n"
+                                              + "        \"serviceCatalog\": [{\n"
+                                              + ACCESS_FOOTER));
+
+    TokenIdAndPublicURL result = client.passwordAuth(server.getUrl("/").toURI(), "u", "p");
+
+    assertNull(result);
+  }
+
+  static final String TOKEN = "        \"token\": {\n"
+                              + "            \"id\": \"1bcd122d87494f5ab39a185b9ec5ff73\",\n"
+                              + "            \"expires\": \"2013-07-01T10:13:55.109-05:00\",\n"
+                              + "            \"tenant\": {\n"
+                              + "                \"id\": \"1234\",\n"
+                              + "                \"name\": \"1234\"\n"
+                              + "            }\n"
+                              + "        },\n";
+  static final String ACCESS_HEADER = "{\n"
+                                      + "    \"access\": {\n"
+                                      + TOKEN
+                                      + "        \"serviceCatalog\": [{\n";
+  static final String SERVICE = "        }, {\n"
+                                + "            \"name\": \"cloudMonitoring\",\n"
+                                + "            \"endpoints\": [{\n"
+                                + "                \"tenantId\": \"1234\",\n"
+                                + "                \"publicURL\": \"https:\\/\\/monitoring.api.rackspacecloud.com\\/v1.0\\/1234\"\n"
+                                + "            }],\n"
+                                + "            \"type\": \"rax:monitor\"\n";
+  static final String ACCESS_FOOTER = "        }]\n"
+                                      + "    }\n"
+                                      + "}";
 }

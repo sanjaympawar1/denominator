@@ -1,72 +1,83 @@
 package denominator.hook;
 
-import static com.google.mockwebserver.SocketPolicy.DISCONNECT_AT_START;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.rule.MockWebServerRule;
+
+import org.assertj.core.api.Assertions;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 
-import org.testng.annotations.Test;
+import static com.squareup.okhttp.mockwebserver.SocketPolicy.SHUTDOWN_INPUT_AT_END;
+import static denominator.assertj.MockWebServerAssertions.assertThat;
+import static org.junit.Assert.assertNull;
 
-import com.google.common.collect.ImmutableList;
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
 
-@Test
 public class InstanceMetadataHookTest {
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "metadataService must end with '/'; http://localhost/foo provided")
-    public void overriddenUrlEndsInSlash() throws Exception {
-        InstanceMetadataHook.get(URI.create("http://localhost/foo"), "public-hostname");
-    }
+  @Rule
+  public final MockWebServerRule server = new MockWebServerRule();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "path must end with '/'; iam/security-credentials provided")
-    public void listPathEndsInSlash() throws Exception {
-        InstanceMetadataHook.list("iam/security-credentials");
-    }
+  @Test
+  public void overriddenUrlEndsInSlash() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("metadataService must end with '/'; http://localhost/foo provided");
 
-    @Test(timeOut = 3000)
-    public void whenMetadataServiceIsntRunningWeDontHangMoreThan3Seconds() throws Exception {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setSocketPolicy(DISCONNECT_AT_START));
-        server.play();
-        try {
-            assertNull(InstanceMetadataHook.get(server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
-                    "public-hostname"));
+    InstanceMetadataHook.get(URI.create("http://localhost/foo"), "public-hostname");
+  }
 
-        } finally {
-            assertEquals(server.takeRequest().getRequestLine(), "GET /latest/meta-data/public-hostname HTTP/1.1");
-            server.shutdown();
-        }
-    }
+  @Test
+  public void listPathEndsInSlash() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("path must end with '/'; iam/security-credentials provided");
 
-    public void getWhenMetadataPresent() throws Exception {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody("ec2-50-17-85-234.compute-1.amazonaws.com"));
-        server.play();
-        try {
-            assertEquals(
-                    InstanceMetadataHook.get(server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
-                            "public-hostname"), "ec2-50-17-85-234.compute-1.amazonaws.com");
+    InstanceMetadataHook.list("iam/security-credentials");
+  }
 
-        } finally {
-            assertEquals(server.takeRequest().getRequestLine(), "GET /latest/meta-data/public-hostname HTTP/1.1");
-            server.shutdown();
-        }
-    }
+  @Test
+  public void whenMetadataServiceIsntRunningWeDontHangMoreThan3Seconds() throws Exception {
+    server.enqueue(new MockResponse().setSocketPolicy(SHUTDOWN_INPUT_AT_END));
 
-    public void listSplitsOnNewline() throws Exception {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody("route53-readonly\nbooberry"));
-        server.play();
-        try {
-            assertEquals(InstanceMetadataHook.list(server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
-                    "iam/security-credentials/"), ImmutableList.of("route53-readonly", "booberry"));
+    assertNull(InstanceMetadataHook
+                   .get(server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
+                        "public-hostname"));
 
-        } finally {
-            assertEquals(server.takeRequest().getRequestLine(),
-                    "GET /latest/meta-data/iam/security-credentials/ HTTP/1.1");
-            server.shutdown();
-        }
-    }
+    assertThat(server.takeRequest())
+        .hasMethod("GET")
+        .hasPath("/latest/meta-data/public-hostname");
+  }
+
+  @Test
+  public void getWhenMetadataPresent() throws Exception {
+    server.enqueue(new MockResponse().setBody("ec2-50-17-85-234.compute-1.amazonaws.com"));
+
+    assertThat(
+        InstanceMetadataHook
+            .get(server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
+                 "public-hostname")).isEqualTo(
+        "ec2-50-17-85-234.compute-1.amazonaws.com");
+
+    assertThat(server.takeRequest())
+        .hasMethod("GET")
+        .hasPath("/latest/meta-data/public-hostname");
+  }
+
+  @Test
+  public void listSplitsOnNewline() throws Exception {
+    server.enqueue(new MockResponse().setBody("route53-readonly\nbooberry"));
+
+    Assertions.assertThat(InstanceMetadataHook
+                              .list(
+                                  server.getUrl(InstanceMetadataHook.DEFAULT_URI.getPath()).toURI(),
+                                  "iam/security-credentials/"))
+        .containsExactly("route53-readonly", "booberry");
+
+    assertThat(server.takeRequest())
+        .hasMethod("GET")
+        .hasPath("/latest/meta-data/iam/security-credentials/");
+  }
 }

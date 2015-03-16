@@ -1,30 +1,9 @@
 package denominator.designate;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import denominator.CheckConnectionLiveTest;
+import denominator.Live.UseTestGraph;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+@UseTestGraph(DesignateTestGraph.class)
+public class DesignateCheckConnectionLiveTest extends CheckConnectionLiveTest {
 
-import denominator.BaseProviderLiveTest;
-
-@Test
-public class DesignateCheckConnectionLiveTest extends BaseProviderLiveTest {
-
-    @BeforeClass
-    private void setUp() {
-        manager = new DesignateConnection().manager;
-    }
-
-    @Test
-    public void success() {
-        skipIfNoCredentials();
-        assertTrue(manager.checkConnection());
-    }
-
-    @Test
-    public void failGracefullyOnBadPassword() {
-        skipIfNoCredentials();
-        assertFalse(DesignateConnection.create("TENANT", "FOO", "BAR").checkConnection());
-    }
 }

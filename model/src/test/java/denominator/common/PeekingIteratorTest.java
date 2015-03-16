@@ -1,59 +1,64 @@
 package denominator.common;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.NoSuchElementException;
 
-import org.testng.annotations.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
-@Test
 public class PeekingIteratorTest {
 
-    enum TrueThenDone implements Iterable<Boolean> {
-        INSTANCE;
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void unmodifiable() {
+    thrown.expect(UnsupportedOperationException.class);
+
+    PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
+    assertThat(it).containsExactly(true);
+    it.remove();
+  }
+
+  @Test
+  public void next() {
+    thrown.expect(NoSuchElementException.class);
+
+    PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
+    assertThat(it).containsExactly(true);
+    it.next();
+  }
+
+  @Test
+  public void peek() {
+    thrown.expect(NoSuchElementException.class);
+
+    PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
+    assertTrue(it.peek());
+    assertThat(it).containsExactly(true);
+    it.peek();
+  }
+
+  enum TrueThenDone implements Iterable<Boolean> {
+    INSTANCE;
+
+    @Override
+    public PeekingIterator<Boolean> iterator() {
+      return new PeekingIterator<Boolean>() {
+        boolean val = true;
 
         @Override
-        public PeekingIterator<Boolean> iterator() {
-            return new PeekingIterator<Boolean>() {
-                boolean val = true;
-
-                @Override
-                public Boolean computeNext() {
-                    if (val) {
-                        val = false;
-                        return true;
-                    }
-                    return endOfData();
-                }
-            };
+        public Boolean computeNext() {
+          if (val) {
+            val = false;
+            return true;
+          }
+          return endOfData();
         }
-
-    };
-
-    @Test(expectedExceptions = UnsupportedOperationException.class)
-    public void unmodifiable() {
-        PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
-        assertTrue(it.next());
-        it.remove();
+      };
     }
-
-    @Test(expectedExceptions = NoSuchElementException.class)
-    public void next() {
-        PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
-        assertTrue(it.hasNext());
-        assertTrue(it.next());
-        assertFalse(it.hasNext());
-        it.next();
-    }
-
-    @Test(expectedExceptions = NoSuchElementException.class)
-    public void peek() {
-        PeekingIterator<Boolean> it = TrueThenDone.INSTANCE.iterator();
-        assertTrue(it.hasNext());
-        assertTrue(it.peek());
-        assertTrue(it.next());
-        assertFalse(it.hasNext());
-        it.peek();
-    }
+  }
 }

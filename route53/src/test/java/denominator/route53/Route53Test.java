@@ -1,157 +1,134 @@
 package denominator.route53;
 
-import static denominator.model.ResourceRecordSets.a;
-import static org.testng.Assert.assertEquals;
+import com.squareup.okhttp.mockwebserver.MockResponse;
 
-import java.io.IOException;
-import java.util.Map;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import org.testng.annotations.Test;
+import java.util.Arrays;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
-import com.google.mockwebserver.RecordedRequest;
-
+import denominator.Credentials;
 import denominator.model.ResourceRecordSet;
 import denominator.route53.Route53.ActionOnResourceRecordSet;
 import feign.Feign;
 
-@Test(singleThreaded = true)
+import static denominator.model.ResourceRecordSets.a;
+
 public class Route53Test {
 
-    static String hostedZones = ""//
-            + "<ListHostedZonesResponse><HostedZones>"//
-            + "<HostedZone><Id>/hostedzone/Z1PA6795UKMFR9</Id><Name>denominator.io.</Name><CallerReference>denomination</CallerReference><Config><Comment>no comment</Comment></Config><ResourceRecordSetCount>17</ResourceRecordSetCount></HostedZone>"//
-            + "</HostedZones></ListHostedZonesResponse>";
+  @Rule
+  public MockRoute53Server server = new MockRoute53Server();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    static String noHostedZones = ""//
-            + "<ListHostedZonesResponse><HostedZones /></ListHostedZonesResponse>";
+  @Test
+  public void changeResourceRecordSetsRequestCreateAPending() throws Exception {
+    server.enqueue(new MockResponse().setBody(changeResourceRecordSetsResponsePending));
 
-    static String invalidClientTokenId = ""//
-            + "<?xml version=\"1.0\"?>\n"//
-            + "<ErrorResponse xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">"//
-            + "<Error>"//
-            + "<Type>Sender</Type>"//
-            + "<Code>InvalidClientTokenId</Code>"//
-            + "<Message>The security token included in the request is invalid</Message>"//
-            + "</Error>"//
-            + "<RequestId>d3801bc8-f70d-11e2-8a6e-435ba83aa63f</RequestId>"//
-            + "</ErrorResponse>";
+    ActionOnResourceRecordSet
+        createA =
+        ActionOnResourceRecordSet.create(a("www.denominator.io.", 3600, "192.0.2.1"));
 
-    static String changeResourceRecordSetsRequestCreateA = ""//
-            + "<ChangeResourceRecordSetsRequest xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">"//
-            + "<ChangeBatch><Changes><Change><Action>CREATE</Action>"//
-            + "<ResourceRecordSet><Name>www.denominator.io.</Name><Type>A</Type><TTL>3600</TTL><ResourceRecords><ResourceRecord><Value>192.0.2.1</Value></ResourceRecord></ResourceRecords></ResourceRecordSet>"//
-            + "</Change></Changes></ChangeBatch></ChangeResourceRecordSetsRequest>";
+    mockApi().changeResourceRecordSets("Z1PA6795UKMFR9", Arrays.asList(createA));
 
-    static String changeResourceRecordSetsResponsePending = ""//
-            + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"//
-            + "<ChangeResourceRecordSetsResponse xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">\n"//
-            + "  <ChangeInfo>\n"//
-            + "    <Id>/change/C2682N5HXP0BZ4</Id>\n"//
-            + "    <Status>PENDING</Status>\n"//
-            + "    <SubmittedAt>2010-09-10T01:36:41.958Z</SubmittedAt>\n"//
-            + "  </ChangeInfo>\n"//
-            + "</ChangeResourceRecordSetsResponse>";
+    server.assertRequest()
+        .hasMethod("POST")
+        .hasPath("/2012-12-12/hostedzone/Z1PA6795UKMFR9/rrset")
+        .hasXMLBody(changeResourceRecordSetsRequestCreateA);
+  }
 
-    @Test
-    public void changeResourceRecordSetsRequestCreateAPending() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(changeResourceRecordSetsResponsePending));
-        server.play();
+  @Test
+  public void changeResourceRecordSetsWhenAliasTarget() throws Exception {
+    server.enqueue(new MockResponse().setBody(changeResourceRecordSetsResponsePending));
 
-        try {
-            Route53 api = mockApi(server.getPort());
+    ActionOnResourceRecordSet createAlias = ActionOnResourceRecordSet
+        .create(ResourceRecordSet
+                    .<AliasTarget>builder()
+                    .name("www.denominator.io.")
+                    .type("A")
+                    .add(AliasTarget
+                             .create(
+                                 "Z3I0BTR7N27QRM",
+                                 "ipv4-route53recordsetlivetest.adrianc.myzone.com."))
+                    .build());
 
-            ImmutableList<ActionOnResourceRecordSet> batch = ImmutableList.of(ActionOnResourceRecordSet.create(a(
-                    "www.denominator.io.", 3600, "192.0.2.1")));
-            api.changeResourceRecordSets("Z1PA6795UKMFR9", batch);
+    mockApi().changeResourceRecordSets("Z1PA6795UKMFR9", Arrays.asList(createAlias));
 
-            RecordedRequest createRRSet = server.takeRequest();
-            assertEquals(createRRSet.getRequestLine(), "POST /2012-12-12/hostedzone/Z1PA6795UKMFR9/rrset HTTP/1.1");
-            assertEquals(new String(createRRSet.getBody()), changeResourceRecordSetsRequestCreateA);
-        } finally {
-            server.shutdown();
-        }
-    }
+    server.assertRequest()
+        .hasMethod("POST")
+        .hasPath("/2012-12-12/hostedzone/Z1PA6795UKMFR9/rrset")
+        .hasXMLBody(
+            "<ChangeResourceRecordSetsRequest xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">\n"
+            + "  <ChangeBatch>\n"
+            + "    <Changes>\n"
+            + "      <Change>\n"
+            + "        <Action>CREATE</Action>\n"
+            + "        <ResourceRecordSet>\n"
+            + "          <Name>www.denominator.io.</Name>\n"
+            + "          <Type>A</Type>\n"
+            + "          <AliasTarget>\n"
+            + "            <HostedZoneId>Z3I0BTR7N27QRM</HostedZoneId>\n"
+            + "            <DNSName>ipv4-route53recordsetlivetest.adrianc.myzone.com.</DNSName>\n"
+            + "            <EvaluateTargetHealth>false</EvaluateTargetHealth>\n"
+            + "          </AliasTarget>\n"
+            + "        </ResourceRecordSet>\n"
+            + "      </Change>\n"
+            + "    </Changes>\n"
+            + "  </ChangeBatch>\n"
+            + "</ChangeResourceRecordSetsRequest>");
+  }
 
-    static String changeResourceRecordSetsRequestCreateAliasTarget = ""//
-            + "<ChangeResourceRecordSetsRequest xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">"//
-            + "<ChangeBatch><Changes><Change><Action>CREATE</Action>"//
-            + "<ResourceRecordSet><Name>www.denominator.io.</Name><Type>A</Type><AliasTarget><HostedZoneId>Z3I0BTR7N27QRM</HostedZoneId><DNSName>ipv4-route53recordsetlivetest.adrianc.myzone.com.</DNSName><EvaluateTargetHealth>false</EvaluateTargetHealth></AliasTarget></ResourceRecordSet>"//
-            + "</Change></Changes></ChangeBatch></ChangeResourceRecordSetsRequest>";
+  @Test
+  public void changeResourceRecordSetsRequestCreateADuplicate() throws Exception {
+    thrown.expect(InvalidChangeBatchException.class);
+    thrown.expectMessage(
+        "Route53#changeResourceRecordSets(String,List) failed with errors [Tried to create resource record set www.denominator.io. type A, but it already exists]");
 
-    @Test
-    public void changeResourceRecordSetsWhenAliasTarget() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(changeResourceRecordSetsResponsePending));
-        server.play();
+    server.enqueue(new MockResponse().setResponseCode(400).setBody(
+        "<InvalidChangeBatch xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">\n"
+        + "  <Messages>\n"
+        + "    <Message>Tried to create resource record set www.denominator.io. type A, but it already exists</Message>\n"
+        + "  </Messages>\n"
+        + "</InvalidChangeBatch>"));
 
-        try {
-            Route53 api = mockApi(server.getPort());
+    ActionOnResourceRecordSet
+        createA =
+        ActionOnResourceRecordSet.create(a("www.denominator.io.", 3600, "192.0.2.1"));
 
-            ImmutableList<ActionOnResourceRecordSet> batch = ImmutableList.of(ActionOnResourceRecordSet
-                    .create(ResourceRecordSet
-                            .<AliasTarget> builder()
-                            .name("www.denominator.io.")
-                            .type("A")
-                            .add(AliasTarget.create("Z3I0BTR7N27QRM",
-                                    "ipv4-route53recordsetlivetest.adrianc.myzone.com.")).build()));
-            api.changeResourceRecordSets("Z1PA6795UKMFR9", batch);
+    mockApi().changeResourceRecordSets("Z1PA6795UKMFR9", Arrays.asList(createA));
+  }
 
-            RecordedRequest createRRSet = server.takeRequest();
-            assertEquals(createRRSet.getRequestLine(), "POST /2012-12-12/hostedzone/Z1PA6795UKMFR9/rrset HTTP/1.1");
-            assertEquals(new String(createRRSet.getBody()), changeResourceRecordSetsRequestCreateAliasTarget);
-        } finally {
-            server.shutdown();
-        }
-    }
+  Route53 mockApi() {
+    Route53Provider.FeignModule module = new Route53Provider.FeignModule();
+    Feign feign = module.feign(module.logger(), module.logLevel());
+    return feign.newInstance(new Route53Target(new Route53Provider() {
+      @Override
+      public String url() {
+        return server.url();
+      }
+    }, new InvalidatableAuthenticationHeadersProvider(new javax.inject.Provider<Credentials>() {
 
-    static String invalidChangeBatchDuplicate = ""//
-            + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"//
-            + "<InvalidChangeBatch xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">\n"//
-            + "  <Messages>\n"//
-            + "    <Message>Tried to create resource record set www.denominator.io. type A, but it already exists</Message>\n"//
-            + "  </Messages>\n"//
-            + "</InvalidChangeBatch>";
+      @Override
+      public Credentials get() {
+        return server.credentials();
+      }
 
-    @Test(expectedExceptions = InvalidChangeBatchException.class, expectedExceptionsMessageRegExp = "Route53#changeResourceRecordSets\\(String,List\\) failed with errors \\[Tried to create resource record set www.denominator.io. type A, but it already exists\\]")
-    public void changeResourceRecordSetsRequestCreateADuplicate() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(400).setBody(invalidChangeBatchDuplicate));
-        server.play();
+    })));
+  }
 
-        try {
-            Route53 api = mockApi(server.getPort());
+  String changeResourceRecordSetsRequestCreateA =
+      "<ChangeResourceRecordSetsRequest xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">"
+      + "<ChangeBatch><Changes><Change><Action>CREATE</Action>"
+      + "<ResourceRecordSet><Name>www.denominator.io.</Name><Type>A</Type><TTL>3600</TTL><ResourceRecords><ResourceRecord><Value>192.0.2.1</Value></ResourceRecord></ResourceRecords></ResourceRecordSet>"
+      + "</Change></Changes></ChangeBatch></ChangeResourceRecordSetsRequest>";
 
-            ImmutableList<ActionOnResourceRecordSet> batch = ImmutableList.of(ActionOnResourceRecordSet.create(a(
-                    "www.denominator.io.", 3600, "192.0.2.1")));
-            api.changeResourceRecordSets("Z1PA6795UKMFR9", batch);
-        } finally {
-            RecordedRequest createRRSet = server.takeRequest();
-            assertEquals(createRRSet.getRequestLine(), "POST /2012-12-12/hostedzone/Z1PA6795UKMFR9/rrset HTTP/1.1");
-            assertEquals(new String(createRRSet.getBody()), changeResourceRecordSetsRequestCreateA);
-            server.shutdown();
-        }
-    }
-
-    static javax.inject.Provider<Map<String, String>> lazyAuthHeaders = new javax.inject.Provider<Map<String, String>>() {
-
-        @Override
-        public Map<String, String> get() {
-            return ImmutableMap.of();
-        }
-
-    };
-
-    static Route53 mockApi(final int port) {
-        return Feign.create(new Route53Target(new Route53Provider() {
-            @Override
-            public String url() {
-                return "http://localhost:" + port;
-            }
-        }, lazyAuthHeaders), new Route53Provider.FeignModule());
-    }
+  String changeResourceRecordSetsResponsePending =
+      "<ChangeResourceRecordSetsResponse xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\">\n"
+      + "  <ChangeInfo>\n"
+      + "    <Id>/change/C2682N5HXP0BZ4</Id>\n"
+      + "    <Status>PENDING</Status>\n"
+      + "    <SubmittedAt>2010-09-10T01:36:41.958Z</SubmittedAt>\n"
+      + "  </ChangeInfo>\n"
+      + "</ChangeResourceRecordSetsResponse>";
 }
