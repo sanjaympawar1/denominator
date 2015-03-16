@@ -1,14 +1,9 @@
 package denominator.designate;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.ReadOnlyLiveTest;
 
-import denominator.BaseReadOnlyLiveTest;
+@UseTestGraph(DesignateTestGraph.class)
+public class DesignateReadOnlyLiveTest extends ReadOnlyLiveTest {
 
-@Test
-public class DesignateReadOnlyLiveTest extends BaseReadOnlyLiveTest {
-    @BeforeClass
-    private void setUp() {
-        manager = new DesignateConnection().manager;
-    }
 }

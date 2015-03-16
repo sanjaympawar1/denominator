@@ -1,70 +1,75 @@
 package denominator.discoverydns;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.List;
 
 import denominator.model.ResourceRecordSet;
+import feign.Headers;
+import feign.Param;
 import feign.RequestLine;
 
-public interface DiscoveryDNS {
-    @RequestLine("GET /users")
-    Users listUsers();
+@Headers({"Accept: application/json", "Content-Type: application/json"})
+interface DiscoveryDNS {
 
-    @RequestLine("GET /zones")
-    Zones listZones();
+  @RequestLine("GET /users")
+  Users listUsers();
 
-    @RequestLine("GET /zones/{id}?rdataFormat=raw")
-    Zone getZone(@Named("id") String id);
+  @RequestLine("GET /zones")
+  Zones listZones();
 
-    @RequestLine("GET /zones?searchName={zone}")
-    Zones findZone(@Named("zone") String zone);
+  @RequestLine("GET /zones/{id}?rdataFormat=raw")
+  Zone getZone(@Param("id") String id);
 
-    @RequestLine("PUT /zones/{id}/resourcerecords?rdataFormat=raw")
-    void updateZone(@Named("id") String id, Zone zone);
+  @RequestLine("PUT /zones/{id}/resourcerecords?rdataFormat=raw")
+  void updateZone(@Param("id") String id, Zone zone);
 
-    public static final class ResourceRecords {
-        public Set<ResourceRecordSet<?>> records = new LinkedHashSet<ResourceRecordSet<?>>();
+  static final class ResourceRecords {
+
+    List<ResourceRecordSet<?>> records = new ArrayList<ResourceRecordSet<?>>();
+  }
+
+  static final class Zones {
+
+    ZoneList zones;
+
+    class ZoneList {
+
+      List<Zone> zoneList;
+
+      class Zone {
+
+        String id;
+        String name;
+      }
     }
+  }
 
-    public static final class Zones {
-        public ZoneList zones;
+  static final class Zone {
 
-        class ZoneList {
-            public Set<Zone> zoneList;
+    ZoneData zone;
 
-            class Zone {
-                public String id;
-                public String name;
-            }
-        }
+    ZoneData zoneUpdateResourceRecords;
+
+    class ZoneData {
+
+      String id;
+      Long version;
+
+      ResourceRecords resourceRecords;
     }
+  }
 
-    public static final class Zone {
-        public ZoneData zone;
+  static final class Users {
 
-        public ZoneData zoneUpdateResourceRecords;
+    UserList users;
 
-        class ZoneData {
-            public String id;
-            public Long version;
+    class UserList {
 
-            public ResourceRecords resourceRecords;
-        }
+      List<User> userList;
+
+      class User {
+        String id;
+      }
     }
-
-    public static final class Users {
-        public UserList users;
-
-        class UserList {
-            public Set<User> userList;
-
-            class User {
-                public String id;
-                public String username;
-                public String status;
-            }
-        }
-    }
+  }
 }

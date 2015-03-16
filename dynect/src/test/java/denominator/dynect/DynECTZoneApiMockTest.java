@@ -1,74 +1,53 @@
 package denominator.dynect;
 
-import static denominator.CredentialsConfiguration.credentials;
-import static denominator.dynect.DynECTProviderDynamicUpdateMockTest.session;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import com.squareup.okhttp.mockwebserver.MockResponse;
 
-import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
 
-import org.testng.annotations.Test;
+import java.util.Iterator;
 
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
-
-import denominator.Denominator;
 import denominator.ZoneApi;
 import denominator.model.Zone;
 
-@Test(singleThreaded = true)
+import static denominator.assertj.ModelAssertions.assertThat;
+import static denominator.dynect.DynECTTest.noZones;
+import static denominator.dynect.DynECTTest.zones;
+
 public class DynECTZoneApiMockTest {
 
-    String zones ="{\"status\": \"success\", \"data\": [\"/REST/Zone/0.0.0.0.d.6.e.0.0.a.2.ip6.arpa/\", \"/REST/Zone/126.12.44.in-addr.arpa/\", \"/REST/Zone/jclouds.org/\"], \"job_id\": 260657587, \"msgs\": [{\"INFO\": \"get: Your 3 zones\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}";
+  @Rule
+  public MockDynECTServer server = new MockDynECTServer();
 
-    @Test
-    public void iteratorWhenPresent() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(session));
-        server.enqueue(new MockResponse().setBody(zones));
-        server.play();
+  @Test
+  public void iteratorWhenPresent() throws Exception {
+    server.enqueueSessionResponse();
+    server.enqueue(new MockResponse().setBody(zones));
 
-        try {
-            ZoneApi api = mockApi(server.getPort());
-            Zone zone = api.iterator().next();
-            assertEquals(zone.name(), "0.0.0.0.d.6.e.0.0.a.2.ip6.arpa");
-            assertFalse(zone.id() != null);
+    ZoneApi api = server.connect().api().zones();
+    Iterator<Zone> domains = api.iterator();
 
-            assertEquals(server.getRequestCount(), 2);
-            assertEquals(server.takeRequest().getRequestLine(), "POST /Session HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /Zone HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
-    }
+    assertThat(domains.next())
+        .hasName("0.0.0.0.d.6.e.0.0.a.2.ip6.arpa");
+    assertThat(domains.next())
+        .hasName("126.12.44.in-addr.arpa");
+    assertThat(domains.next())
+        .hasName("denominator.io");
+    assertThat(domains).isEmpty();
 
-    String noZones ="{\"status\": \"success\", \"data\": [], \"job_id\": 260657587, \"msgs\": [{\"INFO\": \"get: Your 0 zones\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}";
+    server.assertSessionRequest();
+    server.assertRequest().hasPath("/Zone");
+  }
 
-    @Test
-    public void iteratorWhenAbsent() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(session));
-        server.enqueue(new MockResponse().setBody(noZones));
-        server.play();
+  @Test
+  public void iteratorWhenAbsent() throws Exception {
+    server.enqueueSessionResponse();
+    server.enqueue(new MockResponse().setBody(noZones));
 
-        try {
-            ZoneApi api = mockApi(server.getPort());
-            assertFalse(api.iterator().hasNext());
+    ZoneApi api = server.connect().api().zones();
+    assertThat(api.iterator()).isEmpty();
 
-            assertEquals(server.getRequestCount(), 2);
-            assertEquals(server.takeRequest().getRequestLine(), "POST /Session HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /Zone HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
-    }
-
-    private static ZoneApi mockApi(final int port) {
-        return Denominator.create(new DynECTProvider() {
-            @Override
-            public String url() {
-                return "http://localhost:" + port;
-            }
-        }, credentials("jclouds", "joe", "letmein")).api().zones();
-    }
- }
+    server.assertSessionRequest();
+    server.assertRequest().hasPath("/Zone");
+  }
+}

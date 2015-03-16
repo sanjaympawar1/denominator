@@ -1,56 +1,52 @@
 package denominator.clouddns;
 
-import static com.google.common.base.Strings.emptyToNull;
-import static denominator.CredentialsConfiguration.credentials;
-import static java.lang.System.getProperty;
-
 import javax.inject.Singleton;
-
-import com.google.common.collect.ImmutableMap;
 
 import dagger.Module;
 import dagger.Provides;
-import denominator.Credentials.MapCredentials;
 import denominator.DNSApiManager;
 import denominator.Denominator;
 import feign.Logger;
 
+import static denominator.CredentialsConfiguration.credentials;
+import static feign.Util.emptyToNull;
+import static java.lang.System.getProperty;
+
 public class CloudDNSConnection {
 
-    final DNSApiManager manager;
-    final String mutableZone;
+  final DNSApiManager manager;
+  final String mutableZone;
 
-    CloudDNSConnection() {
-        String username = emptyToNull(getProperty("clouddns.username"));
-        String password = emptyToNull(getProperty("clouddns.password"));
-        if (username != null && password != null) {
-            manager = create(username, password);
-        } else {
-            manager = null;
-        }
-        mutableZone = emptyToNull(getProperty("clouddns.zone"));
+  CloudDNSConnection() {
+    String username = emptyToNull(getProperty("clouddns.username"));
+    String apiKey = emptyToNull(getProperty("clouddns.apiKey"));
+    if (username != null && apiKey != null) {
+      manager = create(username, apiKey);
+    } else {
+      manager = null;
+    }
+    mutableZone = emptyToNull(getProperty("clouddns.zone"));
+  }
+
+  static DNSApiManager create(String username, String apiKey) {
+    CloudDNSProvider provider = new CloudDNSProvider(emptyToNull(getProperty("clouddns.url")));
+    return Denominator.create(provider, credentials(username, apiKey), new Overrides());
+  }
+
+  @Module(overrides = true, library = true)
+  static class Overrides {
+
+    @Provides
+    @Singleton
+    Logger.Level provideLevel() {
+      return Logger.Level.FULL;
     }
 
-    @Module(overrides = true, library = true)
-    static class Overrides {
-        @Provides
-        @Singleton
-        Logger.Level provideLevel() {
-            return Logger.Level.FULL;
-        }
-
-        @Provides
-        @Singleton
-        Logger provideLogger() {
-            return new Logger.JavaLogger().appendToFile("build/http-wire.log");
-        }
+    @Provides
+    @Singleton
+    Logger provideLogger() {
+      return new Logger.JavaLogger().appendToFile("build/http-wire.log");
     }
-
-    static DNSApiManager create(String username, String password) {
-        CloudDNSProvider provider = new CloudDNSProvider(emptyToNull(getProperty("clouddns.url")));
-        return Denominator.create(provider,
-                credentials(MapCredentials.from(ImmutableMap.of("username", username, "password", password))),
-                new Overrides());
-    }
+  }
 
 }

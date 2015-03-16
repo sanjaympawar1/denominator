@@ -1,52 +1,48 @@
 package denominator.model;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertNull;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
+import static denominator.assertj.ModelAssertions.assertThat;
 
-import org.testng.annotations.Test;
-
-@Test
 public class ZoneTest {
-    public void factoryMethodsWork() {
-        Zone name = Zone.create("denominator.io.");
 
-        assertEquals(name.name(), "denominator.io.");
-        assertNull(name.id());
-        assertEquals(name, new Zone("denominator.io.", null));
-        assertEquals(name.hashCode(), new Zone("denominator.io.", null).hashCode());
-        assertEquals(name.toString(), "Zone [name=denominator.io.]");
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-        Zone id = Zone.create("denominator.io.", "ABCD");
+  @Test
+  public void factoryMethodsWork() {
+    Zone name = Zone.create("denominator.io.");
 
-        assertEquals(id.name(), "denominator.io.");
-        assertEquals(id.id(), "ABCD");
-        assertEquals(id, new Zone("denominator.io.", "ABCD"));
-        assertEquals(id.hashCode(), new Zone("denominator.io.", "ABCD").hashCode());
-        assertEquals(id.toString(), "Zone [name=denominator.io., id=ABCD]");
+    assertThat(name)
+        .hasName("denominator.io.")
+        .hasNullId()
+        .isEqualTo(new Zone("denominator.io.", null));
 
-        assertNotEquals(name, id);
-        assertNotEquals(name.hashCode(), id.hashCode());
-    }
+    assertThat(name.hashCode()).isEqualTo(new Zone("denominator.io.", null).hashCode());
+    assertThat(name.toString()).isEqualTo("Zone [name=denominator.io.]");
 
-    public void serializeNaturallyAsJson() {
-        assertEquals(ResourceRecordSetsTest.gson.toJson(Zone.create("denominator.io.")),
-                "{\"name\":\"denominator.io.\"}");
-        assertEquals(ResourceRecordSetsTest.gson.toJson(Zone.create("denominator.io.", "ABCD")),
-                "{\"name\":\"denominator.io.\",\"id\":\"ABCD\"}");
-    }
+    Zone id = Zone.create("denominator.io.", "ABCD");
 
-    public void deserializesNaturallyFromJson() throws IOException {
-        assertEquals(ResourceRecordSetsTest.gson.fromJson("{\"name\":\"denominator.io.\"}", Zone.class),
-                Zone.create("denominator.io."));
-        assertEquals(ResourceRecordSetsTest.gson.fromJson("{\"name\":\"denominator.io.\",\"id\":\"ABCD\"}", Zone.class),
-                Zone.create("denominator.io.", "ABCD"));
-    }
+    assertThat(id)
+        .hasName("denominator.io.")
+        .hasId("ABCD")
+        .isEqualTo(new Zone("denominator.io.", "ABCD"))
+        .isNotEqualTo(name);
 
-    @Test(expectedExceptions = NullPointerException.class, expectedExceptionsMessageRegExp = "name")
-    public void nullNameNPEMessage() {
-        new Zone(null, "id");
-    }
+    assertThat(id.hashCode())
+        .isEqualTo(new Zone("denominator.io.", "ABCD").hashCode())
+        .isNotEqualTo(name.hashCode());
+
+    assertThat(id.toString()).isEqualTo("Zone [name=denominator.io., id=ABCD]");
+  }
+
+  @Test
+  public void nullNameNPEMessage() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+
+    new Zone(null, "id");
+  }
 }

@@ -1,16 +1,9 @@
 package denominator.ultradns;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.profile.GeoWriteCommandsLiveTest;
 
-import denominator.profile.BaseGeoWriteCommandsLiveTest;
+@UseTestGraph(UltraDNSTestGraph.class)
+public class UltraDNSGeoWriteCommandsLiveTest extends GeoWriteCommandsLiveTest {
 
-@Test
-public class UltraDNSGeoWriteCommandsLiveTest extends BaseGeoWriteCommandsLiveTest {
-    @BeforeClass
-    private void setUp() {
-        UltraDNSConnection connection = new UltraDNSConnection();
-        manager = connection.manager;
-        setMutableZoneIfPresent(connection.mutableZone);
-    }
 }

@@ -1,87 +1,116 @@
 package denominator.model.profile;
 
-import static denominator.model.profile.WeightedTest.weighted;
-import static denominator.model.profile.WeightedTest.weightedRRS;
-import static org.testng.Assert.assertEquals;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
-import org.testng.annotations.Test;
-
-import com.google.common.collect.ImmutableMultimap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.AData;
 
-@Test
+import static denominator.assertj.ModelAssertions.assertThat;
+
 public class GeosTest {
-    static Geo geo = Geo.create(ImmutableMultimap.<String, String> builder()//
-            .put("US", "US-VA")//
-            .put("US", "US-CA")//
-            .put("IM", "IM").build().asMap());
 
-    static ResourceRecordSet<AData> geoRRS = ResourceRecordSet.<AData> builder()//
-            .name("www.denominator.io.")//
-            .type("A")//
-            .qualifier("US-East")//
-            .ttl(3600)//
-            .add(AData.create("1.1.1.1"))//
-            .geo(geo).build();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    public void withAdditionalRegionsIdentityWhenAlreadyHaveRegions() {
-        assertEquals(Geos.withAdditionalRegions(geoRRS, geo.regions()), geoRRS);
+  Geo geo = Geo.create(new LinkedHashMap<String, Collection<String>>() {
+    {
+      put("US", Arrays.asList("US-VA", "US-CA"));
+      put("IM", Arrays.asList("IM"));
     }
+  });
 
-    public void withAdditionalRegionsAddsNewTerritory() {
-        ResourceRecordSet<?> withOregon = Geos.withAdditionalRegions(geoRRS, ImmutableMultimap.<String, String> builder()//
-                .put("US", "US-OR").build().asMap());
-        
-        //TODO: switch to fest so we don't have to play games like this.
-        assertEquals(withOregon.geo().regions().toString(), ImmutableMultimap.<String, String> builder()//
-                .putAll("US", "US-VA", "US-CA", "US-OR")//
-                .put("IM", "IM").build().asMap().toString());
-    }
+  ResourceRecordSet<AData> geoRRS = ResourceRecordSet.<AData>builder()//
+      .name("www.denominator.io.")//
+      .type("A")//
+      .qualifier("US-East")//
+      .ttl(3600)//
+      .add(AData.create("1.1.1.1"))//
+      .geo(geo).build();
 
-    public void withAdditionalRegionsAddsNewRegion() {
-        ResourceRecordSet<?> withGB = Geos.withAdditionalRegions(geoRRS, ImmutableMultimap.<String, String> builder()//
-                .putAll("GB", "GB-SLG", "GB-LAN").build().asMap());
-        
-        //TODO: switch to fest so we don't have to play games like this.
-        assertEquals(withGB.geo().regions().toString(), ImmutableMultimap.<String, String> builder()//
-                .putAll("US", "US-VA", "US-CA")//
-                .put("IM", "IM")//
-                .putAll("GB", "GB-SLG", "GB-LAN").build().asMap().toString());
-    }
+  Weighted weighted = Weighted.create(2);
 
-    public void withAdditionalRegionsDoesntAffectOtherProfiles() {
-        ResourceRecordSet<AData> geoRRS = ResourceRecordSet.<AData> builder()//
-                .name("www.denominator.io.")//
-                .type("A")//
-                .qualifier("US-East")//
-                .ttl(3600)//
-                .add(AData.create("1.1.1.1"))//
-                .weighted(weighted)
-                .geo(geo).build();
+  ResourceRecordSet<AData> weightedRRS = ResourceRecordSet.<AData>builder()//
+      .name("www.denominator.io.")//
+      .type("A")//
+      .qualifier("US-East")//
+      .ttl(3600)//
+      .add(AData.create("1.1.1.1"))//
+      .weighted(Weighted.create(2)).build();
 
-        ResourceRecordSet<?> withOregon = Geos.withAdditionalRegions(geoRRS, ImmutableMultimap.<String, String> builder()//
-                .put("US", "US-OR").build().asMap());
-        
-        //TODO: switch to fest so we don't have to play games like this.
-        assertEquals(withOregon.geo().regions().toString(), ImmutableMultimap.<String, String> builder()//
-                .putAll("US", "US-VA", "US-CA", "US-OR")//
-                .put("IM", "IM").build().asMap().toString());
+  @Test
+  public void withAdditionalRegionsIdentityWhenAlreadyHaveRegions() {
+    assertThat(Geos.withAdditionalRegions(geoRRS, geo.regions())).isEqualTo(geoRRS);
+  }
 
-        assertEquals(withOregon.weighted(), weighted);
-    }
+  @Test
+  public void withAdditionalRegionsAddsNewTerritory() {
+    Map<String, Collection<String>> oregon = new LinkedHashMap<String, Collection<String>>();
+    oregon.put("US", Arrays.asList("US-OR"));
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "no regions specified")
-    public void withAdditionalRegionsEmpty() {
-         Geos.withAdditionalRegions(geoRRS, Collections.<String, Collection<String>> emptyMap());
-    }
+    ResourceRecordSet<?> withOregon = Geos.withAdditionalRegions(geoRRS, oregon);
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "rrset does not include geo configuration:.*")
-    public void withAdditionalRegionsNoGeoProfile() {
-         Geos.withAdditionalRegions(weightedRRS, geo.regions());
-    }
+    assertThat(withOregon)
+        .containsRegion("US", "US-VA", "US-CA", "US-OR")
+        .containsRegion("IM", "IM");
+  }
+
+  @Test
+  public void withAdditionalRegionsAddsNewRegion() {
+    Map<String, Collection<String>> gb = new LinkedHashMap<String, Collection<String>>();
+    gb.put("GB", Arrays.asList("GB-SLG", "GB-LAN"));
+
+    ResourceRecordSet<?> withGB = Geos.withAdditionalRegions(geoRRS, gb);
+
+    assertThat(withGB)
+        .containsRegion("US", "US-VA", "US-CA")
+        .containsRegion("IM", "IM")
+        .containsRegion("GB", "GB-SLG", "GB-LAN");
+  }
+
+  @Test
+  public void withAdditionalRegionsDoesntAffectOtherProfiles() {
+    ResourceRecordSet<AData> geoRRS = ResourceRecordSet.<AData>builder()//
+        .name("www.denominator.io.")//
+        .type("A")//
+        .qualifier("US-East")//
+        .ttl(3600)//
+        .add(AData.create("1.1.1.1"))//
+        .weighted(weighted)
+        .geo(geo).build();
+
+    Map<String, Collection<String>> oregon = new LinkedHashMap<String, Collection<String>>();
+    oregon.put("US", Arrays.asList("US-OR"));
+
+    ResourceRecordSet<?> withOregon = Geos.withAdditionalRegions(geoRRS, oregon);
+
+    assertThat(withOregon)
+        .containsRegion("US", "US-VA", "US-CA", "US-OR")
+        .containsRegion("IM", "IM");
+
+    assertThat(withOregon.weighted()).isEqualTo(weighted);
+  }
+
+  @Test
+  public void withAdditionalRegionsEmpty() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("no regions specified");
+
+    Geos.withAdditionalRegions(geoRRS, Collections.<String, Collection<String>>emptyMap());
+  }
+
+  @Test
+  public void withAdditionalRegionsNoGeoProfile() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("rrset does not include geo configuration:");
+
+    Geos.withAdditionalRegions(weightedRRS, geo.regions());
+  }
 }

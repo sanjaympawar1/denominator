@@ -1,22 +1,11 @@
 package denominator.designate;
 
-import static denominator.CredentialsConfiguration.credentials;
-import static denominator.designate.DesignateTest.accessResponse;
-import static denominator.designate.DesignateTest.auth;
-import static denominator.designate.DesignateTest.getURLReplacingQueueDispatcher;
-import static denominator.designate.DesignateTest.password;
-import static denominator.designate.DesignateTest.tenantId;
-import static denominator.designate.DesignateTest.username;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
+import com.squareup.okhttp.mockwebserver.MockResponse;
 
-import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.testng.annotations.Test;
-
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
 
 import dagger.Module;
 import dagger.Provides;
@@ -25,96 +14,84 @@ import denominator.Credentials.ListCredentials;
 import denominator.DNSApi;
 import denominator.Denominator;
 
-@Test(singleThreaded = true)
+import static denominator.CredentialsConfiguration.credentials;
+
 public class DesignateProviderDynamicUpdateMockTest {
 
-    @Test
-    public void dynamicEndpointUpdates() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.play();
+  @Rule
+  public MockDesignateServer server = new MockDesignateServer();
 
-        String updatedPath = "alt";
-        String mockUrl = "http://localhost:" + server.getPort();
-        final AtomicReference<String> dynamicUrl = new AtomicReference<String>(mockUrl);
-        server.setDispatcher(getURLReplacingQueueDispatcher(dynamicUrl));
+  @Test
+  public void dynamicEndpointUpdates() throws Exception {
+    final AtomicReference<String> url = new AtomicReference<String>(server.url());
+    server.enqueueAuthResponse();
+    server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
 
-        server.enqueue(new MockResponse().setBody(accessResponse));
-        server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
-        server.enqueue(new MockResponse().setBody(accessResponse));
-        server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
+    DNSApi api = Denominator.create(new DesignateProvider() {
+      @Override
+      public String url() {
+        return url.get();
+      }
+    }, credentials(server.credentials())).api();
 
-        try {
-            DNSApi api = Denominator.create(new DesignateProvider() {
-                @Override
-                public String url() {
-                    return dynamicUrl.get().toString();
-                }
-            }, credentials(tenantId, username, password)).api();
+    api.zones().iterator();
+    server.assertAuthRequest();
+    server.assertRequest();
 
-            assertFalse(api.zones().iterator().hasNext());
-            dynamicUrl.set(dynamicUrl.get() + "/" + updatedPath);
-            assertFalse(api.zones().iterator().hasNext());
+    MockDesignateServer server2 = new MockDesignateServer();
+    url.set(server2.url());
+    server2.enqueueAuthResponse();
+    server2.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
 
-            assertEquals(server.getRequestCount(), 4);
-            assertEquals(server.takeRequest().getRequestLine(), "POST /tokens HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /v1/domains HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "POST /alt/tokens HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /alt/v1/domains HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
+    api.zones().iterator();
+
+    server2.assertAuthRequest();
+    server2.assertRequest();
+    server2.shutdown();
+  }
+
+  @Test
+  public void dynamicCredentialUpdates() throws Exception {
+    server.enqueueAuthResponse();
+    server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
+
+    AtomicReference<Credentials>
+        dynamicCredentials =
+        new AtomicReference<Credentials>(server.credentials());
+
+    DNSApi
+        api =
+        Denominator.create(server, new OverrideCredentials(dynamicCredentials)).api();
+
+    api.zones().iterator();
+
+    server.assertAuthRequest();
+    server.assertRequest();
+
+    dynamicCredentials.set(ListCredentials.from("tim", "jclouds-bob", "comeon"));
+
+    server.credentials("tim", "jclouds-bob", "comeon");
+    server.enqueueAuthResponse();
+    server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
+
+    api.zones().iterator();
+
+    server.assertAuthRequest();
+    server.assertRequest();
+  }
+
+  @Module(complete = false, library = true, overrides = true)
+  static class OverrideCredentials {
+
+    final AtomicReference<Credentials> dynamicCredentials;
+
+    OverrideCredentials(AtomicReference<Credentials> dynamicCredentials) {
+      this.dynamicCredentials = dynamicCredentials;
     }
 
-    @Test
-    public void dynamicCredentialUpdates() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.play();
-
-        final String mockUrl = "http://localhost:" + server.getPort();
-        server.setDispatcher(getURLReplacingQueueDispatcher(new AtomicReference<String>(mockUrl)));
-
-        server.enqueue(new MockResponse().setBody(accessResponse));
-        server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
-        server.enqueue(new MockResponse().setBody(accessResponse));
-        server.enqueue(new MockResponse().setBody("{ \"domains\": [] }"));
-
-        try {
-            AtomicReference<Credentials> dynamicCredentials = new AtomicReference<Credentials>(
-                    ListCredentials.from(tenantId, username, password));
-
-            DNSApi api = Denominator.create(new DesignateProvider() {
-                @Override
-                public String url() {
-                    return mockUrl;
-                }
-            }, new OverrideCredentials(dynamicCredentials)).api();
-
-            assertFalse(api.zones().iterator().hasNext());
-            dynamicCredentials.set(ListCredentials.from(tenantId, "jclouds-bob", "comeon"));
-            assertFalse(api.zones().iterator().hasNext());
-
-            assertEquals(server.getRequestCount(), 4);
-            assertEquals(new String(server.takeRequest().getBody()), auth);
-            assertEquals(server.takeRequest().getRequestLine(), "GET /v1/domains HTTP/1.1");
-            assertEquals(new String(server.takeRequest().getBody()),
-                    auth.replace(username, "jclouds-bob").replace(password, "comeon"));
-            assertEquals(server.takeRequest().getRequestLine(), "GET /v1/domains HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
+    @Provides
+    public Credentials get() {
+      return dynamicCredentials.get();
     }
-
-    @Module(complete = false, library = true, overrides = true)
-    static class OverrideCredentials {
-        final AtomicReference<Credentials> dynamicCredentials;
-
-        OverrideCredentials(AtomicReference<Credentials> dynamicCredentials) {
-            this.dynamicCredentials = dynamicCredentials;
-        }
-
-        @Provides
-        public Credentials get() {
-            return dynamicCredentials.get();
-        }
-    }
+  }
 }

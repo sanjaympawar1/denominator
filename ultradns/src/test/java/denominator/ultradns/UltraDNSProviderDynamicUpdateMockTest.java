@@ -1,23 +1,11 @@
 package denominator.ultradns;
 
-import static denominator.CredentialsConfiguration.credentials;
-import static denominator.ultradns.UltraDNSTest.getAccountsListOfUser;
-import static denominator.ultradns.UltraDNSTest.getAccountsListOfUserResponse;
-import static denominator.ultradns.UltraDNSTest.getResourceRecordsOfZoneResponseAbsent;
-import static denominator.ultradns.UltraDNSTest.getZonesOfAccount;
-import static denominator.ultradns.UltraDNSTest.getZonesOfAccountResponsePresent;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
+import com.squareup.okhttp.mockwebserver.MockResponse;
 
-import java.io.IOException;
-import java.net.URL;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.testng.annotations.Test;
-
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
 
 import dagger.Module;
 import dagger.Provides;
@@ -26,152 +14,152 @@ import denominator.Credentials.ListCredentials;
 import denominator.DNSApi;
 import denominator.Denominator;
 
-@Test
+import static denominator.CredentialsConfiguration.credentials;
+import static denominator.ultradns.UltraDNSTest.getAccountsListOfUser;
+import static denominator.ultradns.UltraDNSTest.getAccountsListOfUserResponse;
+import static denominator.ultradns.UltraDNSTest.getResourceRecordsOfZoneResponseAbsent;
+import static denominator.ultradns.UltraDNSTest.getZonesOfAccount;
+import static denominator.ultradns.UltraDNSTest.getZonesOfAccountResponseAbsent;
+
 public class UltraDNSProviderDynamicUpdateMockTest {
 
-    @Test
-    public void dynamicAccountIdUpdatesOnEndpoint() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
-        server.enqueue(new MockResponse().setBody(getZonesOfAccountResponsePresent));
-        server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB")));
-        server.enqueue(new MockResponse().setBody(getZonesOfAccountResponsePresent));
-        server.play();
-        
-        try {
-            String initialPath = "/";
-            String updatedPath = "/alt/";
-            URL mockUrl = server.getUrl(initialPath);
-            final AtomicReference<URL> dynamicUrl = new AtomicReference<URL>(mockUrl);
+  @Rule
+  public final MockUltraDNSServer server = new MockUltraDNSServer();
 
-            DNSApi api = Denominator.create(new UltraDNSProvider() {
-                @Override
-                public String url() {
-                    return dynamicUrl.get().toString();
-                }
-            }, credentials("joe", "letmein")).api();
+  @Test
+  public void dynamicEndpointUpdates() throws Exception {
+    final AtomicReference<String> url = new AtomicReference<String>(server.url());
+    server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server.enqueue(new MockResponse().setBody(getZonesOfAccountResponseAbsent));
 
-            api.zones().iterator().next();
-            dynamicUrl.set(new URL(mockUrl, updatedPath));
-            api.zones().iterator().next();
+    DNSApi api = Denominator.create(new UltraDNSProvider() {
+      @Override
+      public String url() {
+        return url.get();
+      }
+    }, credentials(server.credentials())).api();
 
-            assertEquals(server.getRequestCount(), 4);
-            assertEquals(new String(server.takeRequest().getBody()), getAccountsListOfUser);
-            assertEquals(new String(server.takeRequest().getBody()), getZonesOfAccount);
-            assertEquals(new String(server.takeRequest().getBody()), getAccountsListOfUser);
-            assertEquals(new String(server.takeRequest().getBody()), getZonesOfAccount.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
-        } finally {
-            server.shutdown();
-        }
+    api.zones().iterator();
+    server.assertSoapBody(getAccountsListOfUser);
+    server.assertSoapBody(getZonesOfAccount);
+
+    MockUltraDNSServer server2 = new MockUltraDNSServer();
+    url.set(server2.url());
+    server2.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server2.enqueue(new MockResponse().setBody(getZonesOfAccountResponseAbsent));
+
+    api.zones().iterator();
+
+    server2.assertSoapBody(getAccountsListOfUser);
+    server2.assertSoapBody(getZonesOfAccount);
+    server2.shutdown();
+  }
+
+  @Test
+  public void dynamicCredentialUpdates() throws Exception {
+    server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server.enqueue(new MockResponse().setBody(getResourceRecordsOfZoneResponseAbsent));
+
+    AtomicReference<Credentials>
+        dynamicCredentials =
+        new AtomicReference<Credentials>(server.credentials());
+
+    DNSApi
+        api =
+        Denominator.create(server, new OverrideCredentials(dynamicCredentials)).api();
+
+    api.zones().iterator();
+
+    server.assertSoapBody(getAccountsListOfUser);
+    server.assertSoapBody(getZonesOfAccount);
+
+    dynamicCredentials.set(ListCredentials.from("bob", "comeon"));
+
+    server.credentials("bob", "comeon");
+    server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server.enqueue(new MockResponse().setBody(getResourceRecordsOfZoneResponseAbsent));
+
+    api.zones().iterator();
+
+    server.assertSoapBody(getAccountsListOfUser);
+    server.assertSoapBody(getZonesOfAccount);
+  }
+
+  @Test
+  public void dynamicAccountIdUpdatesOnEndpoint() throws Exception {
+    final AtomicReference<String> url = new AtomicReference<String>(server.url());
+    server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server.enqueue(new MockResponse().setBody(getZonesOfAccountResponseAbsent));
+
+    DNSApi api = Denominator.create(new UltraDNSProvider() {
+      @Override
+      public String url() {
+        return url.get();
+      }
+    }, credentials(server.credentials())).api();
+
+    api.zones().iterator();
+
+    server.assertSoapBody(getAccountsListOfUser);
+    server.assertSoapBody(getZonesOfAccount);
+
+    MockUltraDNSServer server2 = new MockUltraDNSServer();
+    url.set(server2.url());
+    server2.enqueue(new MockResponse().setBody(
+        getAccountsListOfUserResponse.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB")));
+    server2.enqueue(new MockResponse().setBody(getZonesOfAccountResponseAbsent));
+
+    api.zones().iterator();
+
+    server2.assertSoapBody(getAccountsListOfUser.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
+    server2.assertSoapBody(getZonesOfAccount.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
+
+    server2.shutdown();
+  }
+
+  @Test
+  public void dynamicAccountIdUpdatesOnCredentials() throws Exception {
+    server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
+    server.enqueue(new MockResponse().setBody(getResourceRecordsOfZoneResponseAbsent));
+
+    AtomicReference<Credentials>
+        dynamicCredentials =
+        new AtomicReference<Credentials>(server.credentials());
+
+    DNSApi
+        api =
+        Denominator.create(server, new OverrideCredentials(dynamicCredentials)).api();
+
+    api.zones().iterator();
+
+    server.assertSoapBody(getAccountsListOfUser.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
+    server.assertSoapBody(getZonesOfAccount);
+
+    dynamicCredentials.set(ListCredentials.from("bob", "comeon"));
+
+    server.credentials("bob", "comeon");
+    server.enqueue(new MockResponse().setBody(
+        getAccountsListOfUserResponse.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB")));
+    server.enqueue(new MockResponse().setBody(getResourceRecordsOfZoneResponseAbsent));
+
+    api.zones().iterator();
+
+    server.assertSoapBody(getAccountsListOfUser.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
+    server.assertSoapBody(getZonesOfAccount.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB"));
+  }
+
+  @Module(complete = false, library = true, overrides = true)
+  static class OverrideCredentials {
+
+    final AtomicReference<Credentials> dynamicCredentials;
+
+    OverrideCredentials(AtomicReference<Credentials> dynamicCredentials) {
+      this.dynamicCredentials = dynamicCredentials;
     }
 
-    @Test
-    public void dynamicAccountIdUpdatesOnCredentials() throws IOException, InterruptedException {
-        final MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse));
-        server.enqueue(new MockResponse().setBody(getZonesOfAccountResponsePresent));
-        server.enqueue(new MockResponse().setBody(getAccountsListOfUserResponse.replace("AAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBB")));
-        server.enqueue(new MockResponse().setBody(getZonesOfAccountResponsePresent));
-        server.play();
-        
-        try {
-            AtomicReference<Credentials> dynamicCredentials = new AtomicReference<Credentials>(
-                    ListCredentials.from("joe", "letmein"));
-
-            DNSApi api = Denominator.create(new UltraDNSProvider() {
-                @Override
-                public String url() {
-                    return server.getUrl("/").toString();
-                }
-            }, new OverrideCredentials(dynamicCredentials)).api();
-
-            api.zones().iterator().next();
-            dynamicCredentials.set(ListCredentials.from("bob", "comeon"));
-            api.zones().iterator().next();
-
-            assertEquals(server.getRequestCount(), 4);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("letmein") != -1);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("AAAAAAAAAAAAAAAA") != -1);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("comeon") != -1);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("BBBBBBBBBBBBBBBB") != -1);
-        } finally {
-            server.shutdown();
-        }
+    @Provides
+    public Credentials get() {
+      return dynamicCredentials.get();
     }
-
-    @Test
-    public void dynamicEndpointUpdates() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(getResourceRecordsOfZoneResponseAbsent));
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(getResourceRecordsOfZoneResponseAbsent));
-        server.play();
-
-        try {
-            String initialPath = "/";
-            String updatedPath = "/alt/";
-            URL mockUrl = server.getUrl(initialPath);
-            final AtomicReference<URL> dynamicUrl = new AtomicReference<URL>(mockUrl);
-
-            DNSApi api = Denominator.create(new UltraDNSProvider() {
-                @Override
-                public String url() {
-                    return dynamicUrl.get().toString();
-                }
-            }, credentials("joe", "letmein")).api();
-
-            assertNull(api.basicRecordSetsInZone("denominator.io.").getByNameAndType("www.denominator.io.", "A"));
-            dynamicUrl.set(new URL(mockUrl, updatedPath));
-            assertNull(api.basicRecordSetsInZone("denominator.io.").getByNameAndType("www.denominator.io.", "A"));
-
-            assertEquals(server.getRequestCount(), 2);
-            assertEquals(server.takeRequest().getRequestLine(), "POST " + initialPath + " HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "POST " + updatedPath + " HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
-    }
-
-    @Test
-    public void dynamicCredentialUpdates() throws IOException, InterruptedException {
-        final MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(getResourceRecordsOfZoneResponseAbsent));
-        server.enqueue(new MockResponse().setResponseCode(200).setBody(getResourceRecordsOfZoneResponseAbsent));
-        server.play();
-
-        try {
-            AtomicReference<Credentials> dynamicCredentials = new AtomicReference<Credentials>(
-                    ListCredentials.from("joe", "letmein"));
-
-            DNSApi api = Denominator.create(new UltraDNSProvider() {
-                @Override
-                public String url() {
-                    return server.getUrl("/").toString();
-                }
-            }, new OverrideCredentials(dynamicCredentials)).api();
-
-            assertNull(api.basicRecordSetsInZone("denominator.io.").getByNameAndType("www.denominator.io.", "A"));
-            dynamicCredentials.set(ListCredentials.from("bob", "comeon"));
-            assertNull(api.basicRecordSetsInZone("denominator.io.").getByNameAndType("www.denominator.io.", "A"));
-
-            assertEquals(server.getRequestCount(), 2);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("letmein") != -1);
-            assertTrue(new String(server.takeRequest().getBody()).indexOf("comeon") != -1);
-        } finally {
-            server.shutdown();
-        }
-    }
-
-    @Module(complete = false, library = true, overrides = true)
-    static class OverrideCredentials {
-        final AtomicReference<Credentials> dynamicCredentials;
-
-        OverrideCredentials(AtomicReference<Credentials> dynamicCredentials) {
-            this.dynamicCredentials = dynamicCredentials;
-        }
-
-        @Provides
-        public Credentials get() {
-            return dynamicCredentials.get();
-        }
-    }
+  }
 }

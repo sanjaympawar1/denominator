@@ -1,97 +1,90 @@
 package denominator.discoverydns;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
+import com.squareup.okhttp.mockwebserver.MockResponse;
 
-import java.io.IOException;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.util.Iterator;
 
-import org.testng.annotations.Test;
-
-import com.google.common.base.CharMatcher;
-import com.google.common.collect.Iterables;
-import com.google.mockwebserver.MockResponse;
-import com.google.mockwebserver.MockWebServer;
-import com.google.mockwebserver.RecordedRequest;
-
-import denominator.DNSApi;
-import denominator.common.Util;
+import denominator.ResourceRecordSetApi;
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.AData;
 
-@Test(singleThreaded = true)
+import static denominator.assertj.ModelAssertions.assertThat;
+import static denominator.model.ResourceRecordSets.a;
+
 public class DiscoveryDNSResourceRecordSetApiMockTest {
-    @Test
-    public void records() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.zones));
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.records));
-        server.play();
 
-        try {
-            DNSApi api = DiscoveryDNSTest.mockApi(server.getPort()).api();
-            Iterator<ResourceRecordSet<?>> records = api.basicRecordSetsInZone("denominator.io").iterator();
-            assertEquals(server.getRequestCount(), 2);
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones?searchName=denominator.io HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones/123-123-123-123-123?rdataFormat=raw HTTP/1.1");
+  @Rule
+  public MockDiscoveryDNSServer server = new MockDiscoveryDNSServer();
 
-            assertTrue(records.hasNext());
-            ResourceRecordSet<?> record = records.next();
-            assertEquals("www.denominator.io.", record.name());
-            assertEquals("A", record.type());
-            assertEquals(Integer.valueOf(60), record.ttl());
-            assertNull(record.qualifier());
-            assertNull(record.geo());
-            assertEquals(1, record.records().size());
-            assertTrue(record.records().get(0) instanceof AData);
-            AData aData = (AData)record.records().get(0);
-            assertEquals("127.0.0.1", aData.get("address"));
-        } finally {
-            server.shutdown();
-        }
-    }
+  @Test
+  public void listWhenPresent() throws Exception {
+    server.enqueue(new MockResponse().setBody(records));
 
-    @Test
-    public void noRecords() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.zones));
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.noRecords));
-        server.play();
+    Iterator<ResourceRecordSet<?>>
+        records =
+        server.connect().api().basicRecordSetsInZone("123-123-123-123-123").iterator();
 
-        try {
-            DNSApi api = DiscoveryDNSTest.mockApi(server.getPort()).api();
-            assertEquals(0, Iterables.size(api.basicRecordSetsInZone("denominator.io")));
+    assertThat(records.next())
+        .hasName("www.denominator.io.")
+        .hasType("A")
+        .hasTtl(60)
+        .containsExactlyRecords(AData.create("127.0.0.1"));
+    assertThat(records).isEmpty();
 
-            assertEquals(server.getRequestCount(), 2);
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones?searchName=denominator.io HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones/123-123-123-123-123?rdataFormat=raw HTTP/1.1");
-        } finally {
-            server.shutdown();
-        }
-    }
+    server.assertRequest()
+        .hasMethod("GET")
+        .hasPath("/zones/123-123-123-123-123?rdataFormat=raw");
+  }
 
-    @Test
-    public void updateRecords() throws IOException, InterruptedException {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.zones));
-        server.enqueue(new MockResponse().setBody(DiscoveryDNSTest.records));
-        server.enqueue(new MockResponse());
-        server.play();
+  @Test
+  public void listWhenAbsent() throws Exception {
+    server.enqueue(new MockResponse().setBody(
+        "{ \"zone\": { \"@uri\": \"https://api.discoverydns.com/zones/123-123-123-123-123\", \"id\": \"123-123-123-123-123\", \"version\": 10, \"resourceRecords\": [ ] } }"));
 
-        try {
-            DNSApi api = DiscoveryDNSTest.mockApi(server.getPort()).api();
-            ResourceRecordSet<?> rrset =  ResourceRecordSet.builder().name("www.denominator.io.").type("A").ttl(60).add(Util.toMap("A", "127.0.0.1")).build();
-            api.basicRecordSetsInZone("denominator.io").put(rrset);
+    assertThat(server.connect().api().basicRecordSetsInZone("123-123-123-123-123"))
+        .isEmpty();
 
-            assertEquals(server.getRequestCount(), 3);
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones?searchName=denominator.io HTTP/1.1");
-            assertEquals(server.takeRequest().getRequestLine(), "GET /zones/123-123-123-123-123?rdataFormat=raw HTTP/1.1");
-            RecordedRequest request = server.takeRequest();
-            assertEquals(request.getRequestLine(), "PUT /zones/123-123-123-123-123/resourcerecords?rdataFormat=raw HTTP/1.1");
-            assertEquals(DiscoveryDNSTest.updateRecords, CharMatcher.WHITESPACE.trimAndCollapseFrom(new String(request.getBody()), ' '));
-        } finally {
-            server.shutdown();
-        }
-    }
+    server.assertRequest()
+        .hasMethod("GET")
+        .hasPath("/zones/123-123-123-123-123?rdataFormat=raw");
+  }
+
+  @Test
+  public void putCreatesRecord() throws Exception {
+    server.enqueue(new MockResponse().setBody(records));
+    server.enqueue(new MockResponse()); // TODO: realistic response!
+
+    ResourceRecordSetApi api = server.connect().api().basicRecordSetsInZone("123-123-123-123-123");
+    api.put(a("www.denominator.io.", 60, "127.0.0.1"));
+
+    server.assertRequest()
+        .hasMethod("GET")
+        .hasPath("/zones/123-123-123-123-123?rdataFormat=raw");
+    server.assertRequest()
+        .hasMethod("PUT")
+        .hasPath("/zones/123-123-123-123-123/resourcerecords?rdataFormat=raw")
+        .hasBody(
+            "{\n"
+            + "  \"zoneUpdateResourceRecords\": {\n"
+            + "    \"id\": \"123-123-123-123-123\",\n"
+            + "    \"version\": 10,\n"
+            + "    \"resourceRecords\": [\n"
+            + "      {\n"
+            + "        \"name\": \"www.denominator.io.\",\n"
+            + "        \"class\": \"IN\",\n"
+            + "        \"ttl\": \"60\",\n"
+            + "        \"type\": \"A\",\n"
+            + "        \"rdata\": \"127.0.0.1\"\n"
+            + "      }\n"
+            + "    ]\n"
+            + "  }\n"
+            + "}");
+  }
+
+  String
+      records =
+      "{ \"zone\": { \"@uri\": \"https://api.discoverydns.com/zones/123-123-123-123-123\", \"id\": \"123-123-123-123-123\", \"version\": 10, \"resourceRecords\": [ { \"name\": \"www.denominator.io.\", \"class\": \"IN\", \"ttl\": \"60\", \"type\": \"A\", \"rdata\": \"127.0.0.1\" } ] } }";
 }

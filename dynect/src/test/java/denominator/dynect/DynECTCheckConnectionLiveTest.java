@@ -1,30 +1,9 @@
 package denominator.dynect;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import denominator.CheckConnectionLiveTest;
+import denominator.Live.UseTestGraph;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+@UseTestGraph(DynECTTestGraph.class)
+public class DynECTCheckConnectionLiveTest extends CheckConnectionLiveTest {
 
-import denominator.BaseProviderLiveTest;
-
-@Test
-public class DynECTCheckConnectionLiveTest extends BaseProviderLiveTest {
-
-    @BeforeClass
-    private void setUp() {
-        manager = new DynECTConnection().manager;
-    }
-
-    @Test
-    public void success() {
-        skipIfNoCredentials();
-        assertTrue(manager.checkConnection());
-    }
-
-    @Test
-    public void failGracefullyOnBadPassword() {
-        skipIfNoCredentials();
-        assertFalse(DynECTConnection.create("CUSTOMER", "FOO", "BAR").checkConnection());
-    }
 }

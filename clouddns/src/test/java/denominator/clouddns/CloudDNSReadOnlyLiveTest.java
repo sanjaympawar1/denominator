@@ -1,14 +1,9 @@
 package denominator.clouddns;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.ReadOnlyLiveTest;
 
-import denominator.BaseReadOnlyLiveTest;
+@UseTestGraph(CloudDNSTestGraph.class)
+public class CloudDNSReadOnlyLiveTest extends ReadOnlyLiveTest {
 
-@Test
-public class CloudDNSReadOnlyLiveTest extends BaseReadOnlyLiveTest {
-    @BeforeClass
-    private void setUp() {
-        manager = new CloudDNSConnection().manager;
-    }
 }

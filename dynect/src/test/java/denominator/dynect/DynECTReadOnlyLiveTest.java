@@ -1,14 +1,9 @@
 package denominator.dynect;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import denominator.Live.UseTestGraph;
+import denominator.ReadOnlyLiveTest;
 
-import denominator.BaseReadOnlyLiveTest;
+@UseTestGraph(DynECTTestGraph.class)
+public class DynECTReadOnlyLiveTest extends ReadOnlyLiveTest {
 
-@Test
-public class DynECTReadOnlyLiveTest extends BaseReadOnlyLiveTest {
-    @BeforeClass
-    private void setUp() {
-        manager = new DynECTConnection().manager;
-    }
 }
