@@ -1,6 +1,8 @@
 package denominator.verisignmdns;
 
 import static denominator.common.Preconditions.checkNotNull;
+import static denominator.common.Util.filter;
+import static denominator.model.ResourceRecordSets.nameEqualTo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,8 +43,10 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        throw new UnsupportedOperationException();
+      checkNotNull(name, "name was null");
+      return filter(iterator(), nameEqualTo(name));
     }
+
 
     protected void put(Filter<ResourceRecordSet<?>> valid, ResourceRecordSet<?> rrset) {
         throw new UnsupportedOperationException();

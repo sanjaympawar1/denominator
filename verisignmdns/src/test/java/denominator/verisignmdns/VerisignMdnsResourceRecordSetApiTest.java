@@ -13,6 +13,7 @@ import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
 import static denominator.verisignmdns.VerisignMdnsTest.createRequestARecordResponse;
 import static denominator.verisignmdns.VerisignMdnsTest.createRequestRecordTemplete;
+import static denominator.verisignmdns.VerisignMdnsTest.mockAllProfileResourceRecordSetApi;
 import static denominator.verisignmdns.VerisignMdnsTest.mockResourceRecordSetApi;
 import static denominator.verisignmdns.VerisignMdnsTest.rrByNameAndTypeTemplate;
 import static denominator.verisignmdns.VerisignMdnsTest.rrDeleteResponse;
@@ -104,6 +105,36 @@ public class VerisignMdnsResourceRecordSetApiTest {
                 count++;
             }
             assertEquals(count, 2);
+        } finally {
+            server.shutdown();
+        }
+    }
+
+    @Test
+    public void iterateByName() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(rrListValildResponse));
+        server.play();
+        try {
+            VerisignMdnsAllProfileResourceRecordSetApi verisignMdnsAllProfileResourceRecordSetApi =
+                    mockAllProfileResourceRecordSetApi(server.getPort());
+            Iterator<ResourceRecordSet<?>> actulResult = verisignMdnsAllProfileResourceRecordSetApi.iterateByName(VALID_OWNER1);
+            assertNotNull(actulResult);
+
+            ResourceRecordSet<?> rrs = actulResult.next();
+
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
+
+            Object entry = rrs.records().get(0);
+
+            assertTrue(entry instanceof CNAMEData);
+            CNAMEData cnameData = (CNAMEData) entry;
+            assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);
+            // verify we have 1 records as expected.
+            assertTrue(!actulResult.hasNext());
         } finally {
             server.shutdown();
         }

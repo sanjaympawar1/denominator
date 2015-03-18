@@ -1,6 +1,8 @@
 package denominator.verisignmdns;
 
 import static denominator.common.Preconditions.checkNotNull;
+import static denominator.common.Util.filter;
+import static denominator.model.ResourceRecordSets.nameEqualTo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,7 +45,6 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         return result;
     }
 
-
     public Iterator<ResourceRecordSet<?>> iterateByNameAndType(String name, String type) {
         checkNotNull(type, "type was null");
         checkNotNull(name, "name was null");
@@ -55,7 +56,8 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
 
     @Override
     public Iterator<ResourceRecordSet<?>> iterateByName(String name) {
-        throw new UnsupportedOperationException();
+      checkNotNull(name, "name was null");
+      return filter(iterator(), nameEqualTo(name));
     }
 
     @Override

@@ -18,6 +18,7 @@ import denominator.ZoneApi;
 import denominator.verisignmdns.VerisignMdnsAllProfileResourceRecordSetApi;
 import denominator.verisignmdns.VerisignMdnsProvider;
 import denominator.verisignmdns.VerisignMdnsProvider.XMLCodec;
+import denominator.verisignmdns.VerisignMdnsProvider.FeignModule;
 import denominator.verisignmdns.VerisignMdns.Record;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -443,7 +444,7 @@ public class VerisignMdnsTest {
     }
 
     public static ErrorDecoder mockErrorDecoder() {
-        ErrorDecoder errorDecoder = ObjectGraph.create(new XMLCodec()).get(ErrorDecoder.class);
+        ErrorDecoder errorDecoder = ObjectGraph.create(new FeignModule()).get(ErrorDecoder.class);
         return errorDecoder;
     }
 

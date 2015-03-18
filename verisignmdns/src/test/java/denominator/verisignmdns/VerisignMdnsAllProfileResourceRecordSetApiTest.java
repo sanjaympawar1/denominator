@@ -85,4 +85,34 @@ public class VerisignMdnsAllProfileResourceRecordSetApiTest {
             server.shutdown();
         }
     }
+
+    @Test
+    public void iterateByName() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(rrListValildResponse));
+        server.play();
+        try {
+            VerisignMdnsAllProfileResourceRecordSetApi verisignMdnsAllProfileResourceRecordSetApi =
+                    mockAllProfileResourceRecordSetApi(server.getPort());
+            Iterator<ResourceRecordSet<?>> actulResult = verisignMdnsAllProfileResourceRecordSetApi.iterateByName(VALID_OWNER1);
+            assertNotNull(actulResult);
+
+            ResourceRecordSet<?> rrs = actulResult.next();
+
+            assertNotNull(rrs);
+            assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
+            assertEquals(rrs.type(), VALID_RR_TYPE_CNAME);
+            assertEquals(rrs.name(), VALID_OWNER1);
+
+            Object entry = rrs.records().get(0);
+
+            assertTrue(entry instanceof CNAMEData);
+            CNAMEData cnameData = (CNAMEData) entry;
+            assertEquals(cnameData.values().iterator().next(), VALID_RDATA1);
+            // verify we have 1 records as expected.
+            assertTrue(!actulResult.hasNext());
+        } finally {
+            server.shutdown();
+        }
+    }
 }
