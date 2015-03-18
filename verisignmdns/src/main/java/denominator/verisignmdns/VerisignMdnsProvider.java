@@ -24,6 +24,7 @@ import denominator.verisignmdns.VerisignMdnsContentHandler.RecordListHandler;
 import denominator.verisignmdns.VerisignMdnsContentHandler.ZoneListHandler;
 import denominator.verisignmdns.VerisignMdnsErrorDecoder.VerisignMdnsError;
 import feign.Feign;
+import feign.Logger;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
@@ -65,8 +66,8 @@ public class VerisignMdnsProvider extends BasicProvider {
         return profileToRecordTypes;
     }
 
-    @dagger.Module(injects = DNSApiManager.class, complete = false, includes = {NothingToClose.class,
-            GeoUnsupported.class, WeightedUnsupported.class, FeignModule.class})
+    @dagger.Module(injects = DNSApiManager.class, complete = false, includes = {NothingToClose.class, GeoUnsupported.class,
+            WeightedUnsupported.class, FeignModule.class})
     public static final class Module {
 
         @Provides
@@ -97,8 +98,10 @@ public class VerisignMdnsProvider extends BasicProvider {
     }
 
     @dagger.Module(
-            injects = {VerisignMdnsResourceRecordSetApi.Factory.class}, complete = false, overrides = true,
-            includes = {Feign.Defaults.class, XMLCodec.class})
+            injects = {VerisignMdnsResourceRecordSetApi.Factory.class}, 
+            complete = false, overrides = true) //,
+//            includes = {//Feign.Defaults.class,
+//                     XMLCodec.class})
     public static final class FeignModule {
 
         @Singleton
@@ -106,12 +109,43 @@ public class VerisignMdnsProvider extends BasicProvider {
         VerisignMdns verisignMdns(Feign feign, VerisignMdnsTarget target) {
             return feign.newInstance(target);
         }
+        @Provides
+        Logger logger() {
+          return new Logger.NoOpLogger();
+        }
+
+        @Provides
+        Logger.Level logLevel() {
+          return Logger.Level.NONE;
+        }
+
+
+        ErrorDecoder errorDecoders(VerisignMdnsErrorDecoder errorDecoder) {
+            return errorDecoder;
+        }
+
+        @Provides
+        @Singleton
+        Feign feign(Logger logger, Logger.Level logLevel) {
+          Decoder decoder = SAXDecoder.builder()//
+                  .registerContentHandler(ZoneListHandler.class)//
+                  .registerContentHandler(RecordListHandler.class)//
+                  .registerContentHandler(VerisignMdnsError.class).build();
+
+          return Feign.builder()
+              .logger(logger)
+              .logLevel(logLevel)
+              .encoder( new VerisignMdnsFormEncoder())
+              .decoder(decoder)
+              .errorDecoder(new VerisignMdnsErrorDecoder(decoder))
+              .build();
+        }
     }
 
     @dagger.Module(//
             injects = {Encoder.class, Decoder.class, ErrorDecoder.class},//
             overrides = true, // ErrorDecoder
-            complete = false, addsTo = Feign.Defaults.class//
+            complete = false  //, addsTo = Feign.Defaults.class
     )
     static final class XMLCodec {
         @Provides

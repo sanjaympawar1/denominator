@@ -2,6 +2,7 @@ package denominator.verisignmdns;
 
 import static java.lang.String.format;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,6 @@ final class VerisignMdnsFormEncoder implements Encoder {
                     + "</ns3:listPagingInfo>"
              + "</ns3:getZoneList>";
 
-    @Override
     @SuppressWarnings("unchecked")
     public void encode(Object object, RequestTemplate template) throws EncodeException {
         Map<String, ?> formParams = Map.class.cast(object);
@@ -70,5 +70,10 @@ final class VerisignMdnsFormEncoder implements Encoder {
 
     static String encodeZoneListRequest(Map<String, ?> formParams) {
         return format(GET_ZONE_LIST_ELEMENT, formParams.get("zoneListPage"), formParams.get("pageSize"));
+    }
+
+    @Override
+    public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
+        encode(object, template);
     }
 }

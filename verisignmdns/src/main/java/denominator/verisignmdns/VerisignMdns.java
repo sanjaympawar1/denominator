@@ -3,17 +3,19 @@ package denominator.verisignmdns;
 import java.util.List;
 
 
+
 import denominator.model.Zone;
 
 import javax.inject.Named;
 
 import feign.Body;
+import feign.Param;
 import feign.RequestLine;
 
 interface VerisignMdns {
 
     @RequestLine("POST")
-    List<Zone> getZones(@Named("zoneListPage") int page, @Named("pageSize") int pageSize);
+    List<Zone> getZones(@Param("zoneListPage") int page, @Param("pageSize") int pageSize);
 
     @RequestLine("POST")
     @Body("<urn2:getResourceRecordList>"
@@ -23,8 +25,8 @@ interface VerisignMdns {
                 + "<urn2:pageSize>{pageSize}</urn2:pageSize>"
             + "</urn2:listPagingInfo>"
          + "</urn2:getResourceRecordList>")
-    List<Record> getResourceRecords(@Named("zoneName") String zoneName, @Named("page") int page,
-            @Named("pageSize") int pageSize);
+    List<Record> getResourceRecords(@Param("zoneName") String zoneName, @Param("page") int page,
+            @Param("pageSize") int pageSize);
 
     @RequestLine("POST")
     @Body("<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' "
@@ -38,22 +40,22 @@ interface VerisignMdns {
                 + "<ns3:pageSize>{pageSize}</ns3:pageSize>"
             + "</ns3:listPagingInfo>"
            + "</ns3:getResourceRecordList>")
-    List<Record> getResourceRecords(@Named("zoneName") String zoneName, @Named("name") String name, @Named("type") String type,
-             @Named("page") int page, @Named("pageSize") int pageSize);
+    List<Record> getResourceRecords(@Param("zoneName") String zoneName, @Param("name") String name, @Param("type") String type,
+             @Param("page") int page, @Param("pageSize") int pageSize);
 
     @RequestLine("POST")
     @Body("<urn2:getResourceRecord>"
             + "<urn2:resourceRecordId>{id}</urn2:resourceRecordId>"
           + "</urn2:getResourceRecord>")
-    List<Record> getResourceRecordByQualifier(@Named("id") String id);
+    List<Record> getResourceRecordByQualifier(@Param("id") String id);
 
     @RequestLine("POST")
-    void createResourceRecords(@Named("zoneName") String zoneName,
-            @Named("type") String type, @Named("name") String name,
-            @Named("ttl") int ttl, @Named("rdataList") List<String> rdata);
+    void createResourceRecords(@Param("zoneName") String zoneName,
+            @Param("type") String type, @Param("name") String name,
+            @Param("ttl") int ttl, @Param("rdataList") List<String> rdata);
 
     @RequestLine("POST")
-    void deleteRecourceRecords(@Named("zoneName") String zoneName, @Named("recordIdList") List<String> recordIdList);
+    void deleteRecourceRecords(@Param("zoneName") String zoneName, @Param("recordIdList") List<String> recordIdList);
 
     @RequestLine("POST")
     @Body("<urn2:updateResourceRecord>"
@@ -66,8 +68,8 @@ interface VerisignMdns {
                 + "<urn2:rData>{rdata}</urn2:rData>"
             + "</urn2:resourceRecord>"
          + "</urn2:updateResourceRecord>")
-    void updateResourceRecord(@Named("zoneName") String zoneName, @Named("id") String id, @Named("name") String name,
-            @Named("type") String type, @Named("ttl") int ttl, @Named("rdata") String rdata);
+    void updateResourceRecord(@Param("zoneName") String zoneName, @Param("id") String id, @Param("name") String name,
+            @Param("type") String type, @Param("ttl") int ttl, @Param("rdata") String rdata);
 
     static class Record implements Comparable<Record>{
         String id;

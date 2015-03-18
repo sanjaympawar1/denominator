@@ -1,9 +1,8 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
-apply from: rootProject.file('dagger.gradle')
+//apply plugin: 'eclipse'
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-targetCompatibility = JavaVersion.VERSION_1_6
+sourceCompatibility = 1.6
+
 
 eclipse {
   classpath {
@@ -22,8 +21,8 @@ test {
 
 dependencies {
   compile      project(':denominator-core')
-  compile     'com.netflix.feign:feign-core:6.1.2'
-  compile     'com.netflix.feign:feign-sax:6.1.2'
+  compile     'com.netflix.feign:feign-core:8.1.0'
+  compile     'com.netflix.feign:feign-sax:8.1.0'
   testCompile  project(':denominator-core').sourceSets.test.output
   testCompile 'com.google.guava:guava:14.0.1'
   testCompile 'org.testng:testng:6.8.5'
