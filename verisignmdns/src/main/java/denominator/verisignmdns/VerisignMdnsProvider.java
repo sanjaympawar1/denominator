@@ -99,7 +99,7 @@ public class VerisignMdnsProvider extends BasicProvider {
 
     @dagger.Module(
             injects = {VerisignMdnsResourceRecordSetApi.Factory.class}, 
-            complete = false, overrides = true,
+            complete = false, overrides = false,
             includes = {XMLCodec.class})
     final static class FeignModule {
 

@@ -7,8 +7,8 @@ import org.junit.runners.Parameterized.Parameter;
 
 import denominator.model.ResourceRecordSet;
 import denominator.model.Zone;
-
-import static denominator.assertj.ModelAssertions.assertThat;
+import denominator.assertj.ModelAssertions;
+import denominator.assertj.ResourceRecordSetAssert;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
@@ -25,7 +25,8 @@ public class WriteCommandsLiveTest {
   @Parameter(2)
   public ResourceRecordSet<?> expected;
 
-  @Test
+  @SuppressWarnings("rawtypes")
+@Test
   public void test1_putNewRRS() {
     assumeRRSetAbsent(zone, expected.name(), expected.type());
 
@@ -37,7 +38,7 @@ public class WriteCommandsLiveTest {
 
     ResourceRecordSet<?> rrs = rrsApi(zone).getByNameAndType(expected.name(), expected.type());
 
-    assertThat(rrs)
+     new ResourceRecordSetAssert(rrs)
         .hasName(expected.name())
         .hasType(expected.type())
         .hasTtl(1800)
@@ -54,7 +55,7 @@ public class WriteCommandsLiveTest {
 
     ResourceRecordSet<?> rrs = rrsApi(zone).getByNameAndType(expected.name(), expected.type());
 
-    assertThat(rrs)
+    new ResourceRecordSetAssert(rrs)
         .hasName(expected.name())
         .hasType(expected.type())
         .hasTtl(200000)
