@@ -37,7 +37,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
         Iterator<ResourceRecordSet<?>> result =
-                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList).iterator();
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList, domainName).iterator();
         return result;
     }
 
@@ -63,7 +63,7 @@ final class VerisignMdnsAllProfileResourceRecordSetApi implements denominator.Al
         checkNotNull(name, "name was null");
         Iterator<ResourceRecordSet<?>> result =
                 VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
-                        getByNameAndTypeFromMDNS(name, type)).iterator();
+                        getByNameAndTypeFromMDNS(name, type), domainName).iterator();
         return result;
     }
 

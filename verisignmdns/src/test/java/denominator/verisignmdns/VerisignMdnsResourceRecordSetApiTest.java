@@ -286,7 +286,7 @@ public class VerisignMdnsResourceRecordSetApiTest {
             mdnsRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_MX, VALID_RDATA_MX3));
 
             Set<ResourceRecordSet<?>> inputRecordSet =
-                    VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mdnsRecordList);
+                    VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mdnsRecordList, VALID_ZONE_NAME);
             api.put(inputRecordSet.iterator().next());
 
             String expectedRequest1 =

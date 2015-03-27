@@ -41,7 +41,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
             pageCounter++;
         } while (tempList.size() >= DEFAULT_PAGE_SIZE);
         Iterator<ResourceRecordSet<?>> result =
-                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList).iterator();
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(recordList, domainName).iterator();
         return result;
     }
 
@@ -50,7 +50,7 @@ final class VerisignMdnsResourceRecordSetApi implements ResourceRecordSetApi {
         checkNotNull(name, "name was null");
         Iterator<ResourceRecordSet<?>> result =
                 VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(
-                        getByNameAndTypefromMDNS(name, type)).iterator();
+                        getByNameAndTypefromMDNS(name, type), domainName).iterator();
         return result;
     }
 

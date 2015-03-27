@@ -13,16 +13,16 @@ import denominator.verisignmdns.VerisignMdns.Record;
 
 final class VerisignMdnsContentConversionFunctions {
 
-    static ResourceRecordSet<?> convertMdnsRecordToResourceRecordSet(Record mdnsRecord) {
-        Builder<Map<String, Object>> builder = getResourceRecordSetBuilder(mdnsRecord);
+    static ResourceRecordSet<?> convertMdnsRecordToResourceRecordSet(Record mdnsRecord, String domainName) {
+        Builder<Map<String, Object>> builder = getResourceRecordSetBuilder(mdnsRecord, domainName);
         return builder.build();
     }
 
 
-    static LinkedHashSet<ResourceRecordSet<?>> getResourceRecordSet(List<Record> mdnsRecordList) {
+    static LinkedHashSet<ResourceRecordSet<?>> getResourceRecordSet(List<Record> mdnsRecordList, String domainName) {
         LinkedHashSet<ResourceRecordSet<?>> result = new LinkedHashSet<ResourceRecordSet<?>>();
         for (Record rr : mdnsRecordList) {
-            result.add(convertMdnsRecordToResourceRecordSet(rr));
+            result.add(convertMdnsRecordToResourceRecordSet(rr, domainName));
         }
         return result;
     }
@@ -33,7 +33,7 @@ final class VerisignMdnsContentConversionFunctions {
      * ResourceRecords by sorting them by Name(owner) and type. Sorting simplifies building of
      * ResourceRecordSet.
      */
-    static Set<ResourceRecordSet<?>> getMergedResourceRecordToRRSet(List<Record> mdnsRecordList) {
+    static Set<ResourceRecordSet<?>> getMergedResourceRecordToRRSet(List<Record> mdnsRecordList, String domainName) {
         Set<ResourceRecordSet<?>> result = new LinkedHashSet<ResourceRecordSet<?>>();
         Collections.sort(mdnsRecordList);
         String currentRecordName = "";
@@ -45,7 +45,7 @@ final class VerisignMdnsContentConversionFunctions {
                 if (builder != null) {
                     result.add(builder.build());
                 }
-                builder = getResourceRecordSetBuilder(mdnsRecord);
+                builder = getResourceRecordSetBuilder(mdnsRecord, domainName);
                 currentTtl = mdnsRecord.ttl;
                 currentRecordName = mdnsRecord.name;
                 currentRecordType = mdnsRecord.type;
@@ -63,9 +63,17 @@ final class VerisignMdnsContentConversionFunctions {
         return result;
     }
 
-    private static Builder<Map<String, Object>> getResourceRecordSetBuilder(Record mdnsRecord) {
+    private static Builder<Map<String, Object>> getResourceRecordSetBuilder(Record mdnsRecord, String domainName) {
+        String name = mdnsRecord.name;
+        //converting to same case for proper matching
+        if(!domainName.endsWith(".")) {
+            domainName = domainName.toLowerCase() + ".";
+        }
+        if (name.toLowerCase().endsWith(domainName)){
+            name = name.substring(0, name.length() - (domainName.length() + 1));
+        }
         Builder<Map<String, Object>> builder =
-                ResourceRecordSet.builder().name(mdnsRecord.name).type(mdnsRecord.type).ttl(mdnsRecord.ttl);
+                ResourceRecordSet.builder().name(name).type(mdnsRecord.type).ttl(mdnsRecord.ttl);
         builder.add(Util.toMap(mdnsRecord.type, mdnsRecord.rdata));
         return builder;
     }

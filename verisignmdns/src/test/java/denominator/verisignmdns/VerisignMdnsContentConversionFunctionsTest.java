@@ -10,6 +10,7 @@ import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA_MX1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA_MX2;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_RDATA1;
 import static denominator.verisignmdns.VerisignMdnsTest.VALID_TTL1;
+import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -34,7 +35,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     public void convertMdnsNaptrRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockNaptrRecord();
         ResourceRecordSet<?> rrs =
-                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
+                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord, VALID_ZONE_NAME);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -48,7 +49,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     public void convertMdnsSrvRecordToResourceRecordSet() throws IOException {
         Record mDNSRecord = VerisignMdnsTest.mockSrvRecord();
         ResourceRecordSet<?> rrs =
-                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord);
+                VerisignMdnsContentConversionFunctions.convertMdnsRecordToResourceRecordSet(mDNSRecord, VALID_ZONE_NAME);
 
         assertNotNull(rrs);
         assertEquals(rrs.ttl(), new Integer(Integer.parseInt(VALID_TTL1)));
@@ -63,7 +64,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
         List<Record> mDNSRecordList = new ArrayList<Record>();
         mDNSRecordList.add(VerisignMdnsTest.mockNaptrRecord());
         Set<ResourceRecordSet<?>> actualResult =
-                VerisignMdnsContentConversionFunctions.getResourceRecordSet(mDNSRecordList);
+                VerisignMdnsContentConversionFunctions.getResourceRecordSet(mDNSRecordList, VALID_ZONE_NAME);
 
         assertNotNull(actualResult);
         assertEquals(mDNSRecordList.size(), actualResult.size());
@@ -78,7 +79,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
         mDNSRecordList.add(VerisignMdnsTest.mockRecord(VALID_OWNER1, VALID_RR_TYPE_MX, VALID_RDATA_MX2));
 
         Set<ResourceRecordSet<?>> actualResult =
-                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList);
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList, VALID_ZONE_NAME);
 
         assertNotNull(actualResult);
         assertEquals(actualResult.size(), 3);
@@ -107,7 +108,7 @@ public class VerisignMdnsContentConversionFunctionsTest {
     public void getMergedResourceRecordSetEmptyInput() {
         List<Record> mDNSRecordList = new ArrayList<Record>();
         Set<ResourceRecordSet<?>> actualResult =
-                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList);
+                VerisignMdnsContentConversionFunctions.getMergedResourceRecordToRRSet(mDNSRecordList, VALID_ZONE_NAME);
         assertNotNull(actualResult);
         assertEquals(actualResult.size(), 0);
     }
