@@ -18,7 +18,9 @@ import denominator.model.ResourceRecordSet;
 import static denominator.assertj.ModelAssertions.assertThat;
 import static denominator.dynect.DynECTTest.noneWithName;
 import static denominator.dynect.DynECTTest.noneWithNameAndType;
+import static denominator.dynect.DynECTTest.serviceNS;
 import static denominator.model.ResourceRecordSets.a;
+import static denominator.model.ResourceRecordSets.ns;
 
 public class DynECTResourceRecordSetApiMockTest {
 
@@ -160,6 +162,37 @@ public class DynECTResourceRecordSetApiMockTest {
         .hasBody("{\"publish\":true}");
   }
 
+  /**
+   * DynECT errors if you try to delete a service record.
+   */
+  @Test
+  public void putDoesntDeleteServiceNSRecord() throws Exception {
+    server.enqueueSessionResponse();
+    server.enqueue(new MockResponse().setBody(serviceNS));
+    server.enqueue(new MockResponse().setBody(success));
+    server.enqueue(new MockResponse().setBody(success));
+
+    ResourceRecordSetApi api = server.connect().api().basicRecordSetsInZone("denominator.io");
+    api.put(ns("denominator.io", 3600, "ns1.denominator.io."));
+
+    server.assertSessionRequest();
+    server.assertRequest().hasMethod("GET")
+        .hasPath("/NSRecord/denominator.io/denominator.io?detail=Y");
+    server.assertRequest()
+        .hasMethod("POST")
+        .hasPath("/NSRecord/denominator.io/denominator.io")
+        .hasBody("{\n"
+                 + "  \"ttl\": 3600,\n"
+                 + "  \"rdata\": {\n"
+                 + "    \"nsdname\": \"ns1.denominator.io.\"\n"
+                 + "  }\n"
+                 + "}");
+    server.assertRequest()
+        .hasMethod("PUT")
+        .hasPath("/Zone/denominator.io")
+        .hasBody("{\"publish\":true}");
+  }
+
   @Test
   public void listWhenPresent() throws Exception {
     server.enqueueSessionResponse();
@@ -251,9 +284,8 @@ public class DynECTResourceRecordSetApiMockTest {
   @Test
   public void deleteRRSet() throws Exception {
     server.enqueueSessionResponse();
-    server.enqueue(new MockResponse().setBody(recordIds1And2));
-    server.enqueue(new MockResponse().setBody(success));
-    server.enqueue(new MockResponse().setBody(success));
+    server.enqueue(new MockResponse().setBody(
+        "{\"status\": \"success\", \"data\": {}, \"job_id\": 1548682166, \"msgs\": [{\"INFO\": \"delete: 1 records deleted\", \"SOURCE\": \"API-B\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}"));
     server.enqueue(new MockResponse().setBody(success));
 
     ResourceRecordSetApi api = server.connect().api().basicRecordSetsInZone("denominator.io");
@@ -261,14 +293,8 @@ public class DynECTResourceRecordSetApiMockTest {
 
     server.assertSessionRequest();
     server.assertRequest()
-        .hasMethod("GET")
+        .hasMethod("DELETE")
         .hasPath("/ARecord/denominator.io/www.denominator.io");
-    server.assertRequest()
-        .hasMethod("DELETE")
-        .hasPath("/ARecord/denominator.io/www.denominator.io/1");
-    server.assertRequest()
-        .hasMethod("DELETE")
-        .hasPath("/ARecord/denominator.io/www.denominator.io/2");
     server.assertRequest()
         .hasMethod("PUT")
         .hasPath("/Zone/denominator.io")
@@ -278,14 +304,16 @@ public class DynECTResourceRecordSetApiMockTest {
   @Test
   public void deleteAbsentRRSDoesNothing() throws Exception {
     server.enqueueSessionResponse();
-    server.enqueue(new MockResponse().setResponseCode(404).setBody(noneWithNameAndType));
+    server.enqueue(new MockResponse().setResponseCode(404).setBody(
+        "{\"status\": \"failure\", \"data\": {}, \"job_id\": 1548708416, \"msgs\": [{\"INFO\": \"node: Not in zone\", \"SOURCE\": \"BLL\", \"ERR_CD\": \"NOT_FOUND\", \"LVL\": \"ERROR\"}, {\"INFO\": \"get: Host not found in this zone\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}"
+    ));
 
     ResourceRecordSetApi api = server.connect().api().basicRecordSetsInZone("denominator.io");
     api.deleteByNameAndType("www.denominator.io", "A");
 
     server.assertSessionRequest();
     server.assertRequest()
-        .hasMethod("GET")
+        .hasMethod("DELETE")
         .hasPath("/ARecord/denominator.io/www.denominator.io");
   }
 

@@ -2,17 +2,14 @@ package denominator.cli;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Ordering;
 import com.google.common.io.Files;
-import com.google.common.net.InternetDomainName;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -28,7 +25,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -62,7 +58,13 @@ import denominator.cli.ResourceRecordSetCommands.ResourceRecordSetGet;
 import denominator.cli.ResourceRecordSetCommands.ResourceRecordSetList;
 import denominator.cli.ResourceRecordSetCommands.ResourceRecordSetRemove;
 import denominator.cli.ResourceRecordSetCommands.ResourceRecordSetReplace;
+import denominator.cli.ZoneCommands.ZoneAdd;
+import denominator.cli.ZoneCommands.ZoneDelete;
+import denominator.cli.ZoneCommands.ZoneList;
+import denominator.cli.ZoneCommands.ZoneUpdate;
+import denominator.dynect.DynECTProvider;
 import denominator.model.Zone;
+import denominator.ultradns.UltraDNSProvider;
 import feign.Logger;
 import feign.Logger.Level;
 import io.airlift.airline.Cli;
@@ -120,7 +122,10 @@ public class Denominator {
     builder.withGroup("zone")
         .withDescription("manage zones")
         .withDefaultCommand(ZoneList.class)
-        .withCommand(ZoneList.class);
+        .withCommand(ZoneList.class)
+        .withCommand(ZoneAdd.class)
+        .withCommand(ZoneUpdate.class)
+        .withCommand(ZoneDelete.class);
 
     builder.withGroup("record")
         .withDescription("manage resource record sets in a zone")
@@ -172,22 +177,22 @@ public class Denominator {
     return new LogModule(logLevel);
   }
 
-  static String idOrName(DNSApiManager mgr, String zoneIdOrName) {
-    if (!InternetDomainName.isValid(zoneIdOrName) || !InternetDomainName.from(zoneIdOrName)
-        .hasParent()) {
+  static String id(DNSApiManager mgr, String zoneIdOrName) {
+    if (zoneIdOrName.indexOf('.') == -1) { // Assume that ids don't have dots in them!
       return zoneIdOrName;
-    } else if (InternetDomainName.isValid(zoneIdOrName) && mgr.provider()
-        .supportsDuplicateZoneNames()) {
-      List<Zone> currentZones = new ArrayList<Zone>();
-      for (Zone zone : mgr.api().zones()) {
-        if (zoneIdOrName.equals(zone.name())) {
-          return zone.id();
-        }
-        currentZones.add(zone);
-      }
-      checkArgument(false, "zone %s not found in %s", zoneIdOrName, currentZones);
     }
-    return zoneIdOrName;
+    if (zoneNameIsId(mgr.provider())) {
+      return zoneIdOrName;
+    }
+    Iterator<Zone> result = mgr.api().zones().iterateByName(zoneIdOrName);
+    checkArgument(result.hasNext(), "zone %s not found", zoneIdOrName);
+    return result.next().id();
+  }
+
+  // Special-case providers known to use zone names as ids, as this usually saves 1-200ms of
+  // lookups. We can later introduce a flag or other means to help third-party providers.
+  static boolean zoneNameIsId(Provider provider) {
+    return provider instanceof UltraDNSProvider || provider instanceof DynECTProvider;
   }
 
   @Command(name = "version", description = "output the version of denominator and java runtime in use")
@@ -207,19 +212,17 @@ public class Denominator {
     public static String providerAndCredentialsTable() {
       StringBuilder builder = new StringBuilder();
 
-      builder.append(
-          format(table, "provider", "url", "duplicateZones", "credentialType", "credentialArgs"));
-      for (Provider provider : ImmutableSortedSet
-          .copyOf(Ordering.usingToString(), Providers.list())) {
-        if (provider.credentialTypeToParameterNames().isEmpty()) {
-          builder.append(format("%-10s %-51s %-14s %n", provider.name(), provider.url(),
-                                provider.supportsDuplicateZoneNames()));
+      builder.append(format(
+          table, "provider", "url", "duplicateZones", "credentialType", "credentialArgs"));
+      for (Provider p : ImmutableSortedSet.copyOf(Ordering.usingToString(), Providers.list())) {
+        if (p.credentialTypeToParameterNames().isEmpty()) {
+          builder.append(
+              format("%-10s %-51s %-14s %n", p.name(), p.url(), p.supportsDuplicateZoneNames()));
         }
-        for (Entry<String, Collection<String>> entry : provider.credentialTypeToParameterNames()
-            .entrySet()) {
-          String parameters = Joiner.on(' ').join(entry.getValue());
-          builder.append(format(table, provider.name(), provider.url(),
-                                provider.supportsDuplicateZoneNames(), entry.getKey(), parameters));
+        for (Entry<String, Collection<String>> e : p.credentialTypeToParameterNames().entrySet()) {
+          String params = Joiner.on(' ').join(e.getValue());
+          builder.append(format(
+              table, p.name(), p.url(), p.supportsDuplicateZoneNames(), e.getKey(), params));
         }
       }
       return builder.toString();
@@ -376,24 +379,6 @@ public class Denominator {
      * return a lazy iterator where possible to improve the perceived responsiveness of the cli
      */
     protected abstract Iterator<String> doRun(DNSApiManager mgr);
-  }
-
-  @Command(name = "list", description = "Lists the zones present in this provider.  If the second column is present, it is the zone id.")
-  public static class ZoneList extends DenominatorCommand {
-
-    public Iterator<String> doRun(DNSApiManager mgr) {
-      return Iterators.transform(mgr.api().zones().iterator(), new Function<Zone, String>() {
-
-        @Override
-        public String apply(Zone input) {
-          if (input.id() != null) {
-            return input.name() + " " + input.id();
-          }
-          return input.name();
-        }
-
-      });
-    }
   }
 
   @dagger.Module(overrides = true, library = true)

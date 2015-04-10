@@ -4,18 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import denominator.model.ResourceRecordSet;
-import denominator.model.Zone;
+import feign.Body;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 
 interface Route53 {
 
+  @RequestLine("GET /2012-12-12/hostedzone/{zoneId}")
+  NameAndCount getHostedZone(@Param("zoneId") String zoneId);
+
   @RequestLine("GET /2012-12-12/hostedzone")
-  ZoneList listHostedZones();
+  HostedZoneList listHostedZones();
 
   @RequestLine("GET /2012-12-12/hostedzone?marker={marker}")
-  ZoneList listHostedZones(@Param("marker") String marker);
+  HostedZoneList listHostedZones(@Param("marker") String marker);
+
+  @RequestLine("GET /2013-04-01/hostedzonesbyname?dnsname={dnsname}")
+  HostedZoneList listHostedZonesByName(@Param("dnsname") String dnsname);
+
+  @RequestLine("POST /2012-12-12/hostedzone")
+  @Headers("Content-Type: application/xml")
+  @Body("<CreateHostedZoneRequest xmlns=\"https://route53.amazonaws.com/doc/2012-12-12/\"><Name>{name}</Name><CallerReference>{reference}</CallerReference></CreateHostedZoneRequest>")
+  HostedZoneList createHostedZone(@Param("name") String name, @Param("reference") String reference);
+
+  @RequestLine("DELETE /2012-12-12/hostedzone/{zoneId}")
+  HostedZoneList deleteHostedZone(@Param("zoneId") String zoneId);
 
   @RequestLine("GET /2012-12-12/hostedzone/{zoneId}/rrset")
   ResourceRecordSetList listResourceRecordSets(@Param("zoneId") String zoneId);
@@ -41,15 +55,23 @@ interface Route53 {
                                 List<ActionOnResourceRecordSet> changes)
       throws InvalidChangeBatchException;
 
-  static class ZoneList extends ArrayList<Zone> {
 
-    private static final long serialVersionUID = 1L;
-    String next;
+  class NameAndCount {
+    String name;
+    int resourceRecordSetCount;
   }
 
-  static class ResourceRecordSetList extends ArrayList<ResourceRecordSet<?>> {
+  class HostedZone {
+    String id;
+    String name;
+  }
 
-    private static final long serialVersionUID = 1L;
+  class HostedZoneList extends ArrayList<HostedZone> {
+
+    public String next;
+  }
+
+  class ResourceRecordSetList extends ArrayList<ResourceRecordSet<?>> {
     NextRecord next;
 
     static class NextRecord {
@@ -64,7 +86,7 @@ interface Route53 {
     }
   }
 
-  static class ActionOnResourceRecordSet {
+  class ActionOnResourceRecordSet {
 
     final String action;
     final ResourceRecordSet<?> rrs;

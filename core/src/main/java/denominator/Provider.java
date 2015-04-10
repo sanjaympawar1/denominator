@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import denominator.model.ResourceRecordSet;
-import denominator.model.Zone;
 
 /**
  * Metadata about a provider of DNS services.
@@ -65,18 +64,12 @@ public interface Provider {
    *   "weighted" : ["A", "AAAA", "CNAME"] }
    * </pre>
    *
-   * @see denominator.model.profile
+   * <p/> Well known record types are in the {@code denominator.model.profile} package.
    */
   Map<String, Collection<String>> profileToRecordTypes();
 
   /**
-   * Certain providers support multiple zones with the same {@link Zone#name name}. These are served
-   * by different name servers and used to provide different internal vs external views, environment
-   * testing or smoother zone transfers for the same name.
-   *
-   * @return true when {@link Zone#id() zone id} is present and {@link Zone#idOrName()} returns the
-   * {@link Zone#id() zone id}. If false, {@link Zone#idOrName()} will returns {@link Zone#name zone
-   * name}.
+   * Duplicate zones can exist with the same name.
    */
   boolean supportsDuplicateZoneNames();
 

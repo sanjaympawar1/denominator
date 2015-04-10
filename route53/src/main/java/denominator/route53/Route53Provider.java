@@ -50,6 +50,11 @@ public class Route53Provider extends BasicProvider {
     return url;
   }
 
+  @Override
+  public boolean supportsDuplicateZoneNames() {
+    return true;
+  }
+
   // http://docs.aws.amazon.com/Route53/latest/APIReference/API_ChangeResourceRecordSets.html
   @Override
   public Set<String> basicRecordTypes() {
@@ -70,11 +75,6 @@ public class Route53Provider extends BasicProvider {
     profileToRecordTypes
         .put("roundRobin", Arrays.asList("A", "AAAA", "MX", "NS", "PTR", "SPF", "SRV", "TXT"));
     return profileToRecordTypes;
-  }
-
-  @Override
-  public boolean supportsDuplicateZoneNames() {
-    return true;
   }
 
   @Override
@@ -174,6 +174,7 @@ public class Route53Provider extends BasicProvider {
 
     static Decoder decoder() {
       return SAXDecoder.builder()
+          .registerContentHandler(GetHostedZoneResponseHandler.class)
           .registerContentHandler(ListHostedZonesResponseHandler.class)
           .registerContentHandler(ListResourceRecordSetsResponseHandler.class)
           .registerContentHandler(Messages.class)

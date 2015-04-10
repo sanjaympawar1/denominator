@@ -9,6 +9,14 @@ class UltraDNSException extends FeignException {
    */
   static final int SYSTEM_ERROR = 9999;
   /**
+   * Zone does not exist in the system.
+   */
+  static final int ZONE_NOT_FOUND = 1801;
+  /**
+   * Zone already exists in the system.
+   */
+  static final int ZONE_ALREADY_EXISTS = 1802;
+  /**
    * No resource record with GUID found in the system.
    */
   static final int RESOURCE_RECORD_NOT_FOUND = 2103;
@@ -22,6 +30,10 @@ class UltraDNSException extends FeignException {
    * No Pool or Multiple pools of same type exists for the PoolName
    */
   static final int DIRECTIONALPOOL_NOT_FOUND = 2142;
+  /**
+   * Invalid zone name
+   */
+  static final int INVALID_ZONE_NAME = 2507;
   /**
    * Directional Pool Record does not exist in the system
    */

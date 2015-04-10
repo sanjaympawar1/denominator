@@ -3,9 +3,9 @@
 The denominator CLI is a git-like-cli based on the [airline](https://github.com/airlift/airline) project.  It is packaged as a [really executable jar](http://skife.org/java/unix/2011/06/20/really_executable_jars.html) which means you can do `./denominator` without any of the `java -jar` stuff.
 
 ### Binaries
-Here's how to get denominator-cli `4.4.2` from [bintray](https://bintray.com/pkg/show/general/netflixoss/denominator/denominator-cli)
+Here's how to get denominator-cli `4.5.0` from [bintray](https://bintray.com/pkg/show/general/netflixoss/denominator/denominator-cli)
 
-1. [Download denominator](https://bintray.com/artifact/download/netflixoss/maven/com/netflix/denominator/denominator-cli/4.4.2/denominator-cli-4.4.2-fat.jar)
+1. [Download denominator](https://bintray.com/artifact/download/netflixoss/maven/com/netflix/denominator/denominator-cli/4.5.0/denominator-cli-4.5.0-fat.jar)
 2. Place it on your `$PATH`. (ex. `~/bin`)
 3. Set it to be executable. (`chmod 755 ~/bin/denominator`)
 
@@ -72,8 +72,9 @@ denominator will print out a help statement, but here's the gist.
 
 If you just want to fool around, you can use the `mock` provider.
 ```bash
+# first column is the zone id, which isn't always its name!
 $ denominator -p mock zone list
-denominator.io.
+denominator.io.          denominator.io.                                          admin.denominator.io.                86400
 $ denominator -p mock -z denominator.io. record list
 denominator.io.                                    SOA   3600   ns1.denominator.io. admin.denominator.io. 1 3600 600 604800 60
 denominator.io.                                    NS    86400  ns1.denominator.io.
@@ -94,10 +95,10 @@ route53    https://route53.amazonaws.com                       true           se
 ultradns   https://ultra-api.ultradns.com:8443/UltraDNS_WS/v01 false          password       username password
 ```
 
-The first field says the type, if any.  If there's no type listed, it needs no credentials.  If there is a type listed, the following fields are credential args.  Say for example, you were using `ultradns`.  
+If the credentialType column is blank it needs no credentials.  Otherwise, credentialArgs describes what you need to pass.  Say for example, you were using `ultradns`.  
 
 ```
-ultradns   https://ultra-api.ultradns.com:8443/UltraDNS_WS/v01  password       username password
+ultradns   https://ultra-api.ultradns.com:8443/UltraDNS_WS/v01 name      password       username password
 ```
 This says the provider `ultradns` connects by default to `https://ultra-api.ultradns.com:8443/UltraDNS_WS/v01` and supports `password` authentication, which needs two `-c` parameters: `username` and `password`.  To put it together, you'd specify the following to do a zone list:
 ```bash
@@ -108,8 +109,10 @@ If you need to connect to an alternate url, pass the `-u` parameter:
 ./denominator -p ultradns -u https://ultra-api.ultradns.com:8443/UltraDNS_WS/v01-BETA -c myusername -c mypassword zone list
 ```
 
+The `duplicateZones` column indicates that zone list output will include a qualifier, which differentiates zones with the same name.
+
 ### Zone
-`zone list` returns the zones names in your account.  Ex.
+`zone list` returns the zones in your account.  Ex.
 ```bash
 $ denominator -p ultradns -c my_user -c my_password zone list
 --snip--
@@ -123,6 +126,21 @@ netflix.com.
 $ denominator -p ultradns -c my_user -c my_password record --zone netflix.com. list
 --snip--
 email.netflix.com.                                 A     3600   69.53.237.168
+--snip--
+```
+
+### Zone Id
+The first column in the zone list is the `id`. This can be used to disambiguate zones with the same
+name, or to improve performance by eliminating a network call. If you wish to use a zone's
+identifier, simply pass it instead of the zone name in record commands.
+
+```bash
+$ denominator -q -p route53 -c my_access_key -c my_secret_key zone list -n denominator.io.
+Z2ZEEJCUZCVG56           denominator.io.                      63CEB242-9E3E-327D-9351-2EFD02493E18 awsdns-hostmaster.amazon.com.        86400
+Z3OQLQGABCU3T            denominator.io.                      022DFF2F-2E0B-F0A2-A581-19339A7BA1F1 awsdns-hostmaster.amazon.com.        86400
+$ denominator -q -p route53 -c my_access_key -c my_secret_key record -z Z3OQLQGABCU3T list
+--snip--
+denominator.io.                                   NS                         172800 ns-1312.awsdns-36.org.
 --snip--
 ```
 

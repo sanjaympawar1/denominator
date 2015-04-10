@@ -10,10 +10,12 @@ import java.util.Iterator;
 import denominator.ResourceRecordSetApi;
 import denominator.model.ResourceRecordSet;
 import denominator.model.rdata.AData;
+import denominator.model.rdata.SOAData;
 
 import static denominator.assertj.ModelAssertions.assertThat;
 import static denominator.clouddns.RackspaceApisTest.domainId;
-import static junit.framework.Assert.assertFalse;
+import static denominator.clouddns.RackspaceApisTest.soaResponse;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 public class CloudDNSResourceRecordSetApiMockTest {
@@ -149,6 +151,30 @@ public class CloudDNSResourceRecordSetApiMockTest {
     server.assertRequest()
         .hasMethod("GET")
         .hasPath("/v1.0/123123/domains/1234/records?name=www.denominator.io&type=A");
+  }
+
+  @Test
+  public void getByNameAndType_SOA() throws Exception {
+    server.enqueueAuthResponse();
+    server.enqueue(new MockResponse().setBody(soaResponse));
+
+    ResourceRecordSetApi api = server.connect().api().basicRecordSetsInZone(domainId + "");
+
+    assertThat(api.getByNameAndType("denominator.io", "SOA"))
+        .hasName("denominator.io")
+        .hasType("SOA")
+        .hasTtl(3601)
+        .containsExactlyRecords(SOAData.builder()
+                                    .mname("ns.rackspace.com")
+                                    .rname("nil@denominator.io")
+                                    .serial(1427817447)
+                                    .refresh(3601).retry(3601)
+                                    .expire(3601).minimum(3601).build());
+
+    server.assertAuthRequest();
+    server.assertRequest()
+        .hasMethod("GET")
+        .hasPath("/v1.0/123123/domains/1234/records?name=denominator.io&type=SOA");
   }
 
   @Test

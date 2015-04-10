@@ -9,17 +9,23 @@ import java.util.List;
 import java.util.Map;
 
 import denominator.model.ResourceRecordSet;
-import denominator.model.Zone;
 import feign.Body;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 
-@Headers({"API-Version: 3.5.0", "Content-Type: application/json"})
+@Headers({"API-Version: 3.5.10", "Content-Type: application/json"})
 public interface DynECT {
 
   @RequestLine("GET /Zone")
-  Data<List<Zone>> zones();
+  Data<List<String>> zones();;
+
+  @RequestLine("POST /Zone/{name}")
+  @Body("%7B\"ttl\":{ttl},\"rname\":\"{rname}\"%7D")
+  void createZone(@Param("name") String name, @Param("ttl") int ttl, @Param("rname") String rname);
+
+  @RequestLine("DELETE /Zone/{name}")
+  void deleteZone(@Param("name") String name);
 
   @RequestLine("PUT /Zone/{zone}")
   @Body("{\"publish\":true}")
@@ -44,11 +50,6 @@ public interface DynECT {
                                                                  @Param("fqdn") String fqdn,
                                                                  @Param("type") String type);
 
-  @RequestLine("GET /{type}Record/{zone}/{fqdn}")
-  Data<List<String>> recordIdsInZoneByNameAndType(@Param("zone") String zone,
-                                                  @Param("fqdn") String fqdn,
-                                                  @Param("type") String type);
-
   @RequestLine("GET /{type}Record/{zone}/{fqdn}?detail=Y")
   Data<Iterator<Record>> recordsInZoneByNameAndType(@Param("zone") String zone,
                                                     @Param("fqdn") String fqdn,
@@ -56,30 +57,41 @@ public interface DynECT {
 
   @RequestLine("POST /{type}Record/{zone}/{fqdn}")
   void scheduleCreateRecord(@Param("zone") String zone, @Param("fqdn") String fqdn,
-                            @Param("type") String type,
-                            @Param("ttl") int ttl, @Param("rdata") Map<String, Object> rdata);
+                            @Param("type") String type, @Param("ttl") int ttl,
+                            @Param("rdata") Map<String, Object> rdata);
+
+  @RequestLine("PUT /SOARecord/{zone}/{zone}/{recordId}")
+  @Body("%7B\"ttl\":\"{ttl}\",\"rdata\":%7B\"rname\":\"{rname}\"%7D%7D")
+  void scheduleUpdateSOA(@Param("zone") String zone, @Param("recordId") long recordId,
+                         @Param("ttl") int ttl, @Param("rname") String rname);
 
   @RequestLine("DELETE /{recordId}")
   void scheduleDeleteRecord(@Param("recordId") String recordId);
 
+  @RequestLine("DELETE /{type}Record/{zone}/{fqdn}")
+  void scheduleDeleteRecordsInZoneByNameAndType(@Param("zone") String zone,
+                                                @Param("fqdn") String fqdn,
+                                                @Param("type") String type);
+
   /**
    * DynECT json includes an envelope called "data", which makes it difficult.
    */
-  static class Data<T> {
+  class Data<T> {
 
     T data;
   }
 
-  static class Record {
+  class Record {
 
     long id;
+    String serviceClass;
     String name;
     String type;
     int ttl;
     Map<String, Object> rdata = new LinkedHashMap<String, Object>();
   }
 
-  static class GeoService {
+  class GeoService {
 
     List<Node> nodes = new ArrayList<Node>();
     List<GeoRegionGroup> groups = new ArrayList<GeoRegionGroup>();

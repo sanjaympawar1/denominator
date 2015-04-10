@@ -5,13 +5,12 @@ import com.squareup.okhttp.mockwebserver.MockResponse;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 import denominator.Credentials;
 import denominator.dynect.InvalidatableTokenProvider.Session;
-import denominator.model.Zone;
 import feign.Feign;
+import feign.RetryableException;
 
 import static denominator.assertj.ModelAssertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
@@ -52,12 +51,23 @@ public class DynECTTest {
   public void zonesWhenPresent() throws Exception {
     server.enqueue(new MockResponse().setBody(zones));
 
-    Iterator<Zone> iterator = mockApi().zones().data.iterator();
-    iterator.next();
-    iterator.next();
-    assertThat(iterator.next()).hasName("denominator.io");
+    assertThat(mockApi().zones().data)
+        .containsExactly("denominator.io");
 
     server.assertRequest().hasMethod("GET").hasPath("/Zone");
+  }
+
+  @Test
+  public void populatesServiceClass() throws Exception {
+    server.enqueue(new MockResponse().setBody(serviceNS));
+
+    assertThat(
+        mockApi().recordsInZoneByNameAndType("denominator.io.", "denominator.io.", "NS").data)
+        .extracting("serviceClass")
+        .containsExactly("Primary");
+
+    server.assertRequest().hasMethod("GET")
+        .hasPath("/NSRecord/denominator.io./denominator.io.?detail=Y");
   }
 
   @Test
@@ -95,14 +105,26 @@ public class DynECTTest {
     server.assertRequest().hasMethod("GET").hasPath("/Zone");
   }
 
+  /**
+   * Eventhough there's no task api, unless we retry zone operations, users who attempt to delete
+   * zones will almost certainly fail.
+   */
   @Test
-  public void blockedDoesntRetry() throws Exception {
+  public void blockedSlowlyRetries() throws Exception {
+    long start = System.currentTimeMillis();
+    server.enqueue(new MockResponse().setResponseCode(400).setBody(taskBlocking));
+    server.enqueue(new MockResponse().setResponseCode(400).setBody(taskBlocking));
+    server.enqueue(new MockResponse().setResponseCode(400).setBody(taskBlocking));
+    server.enqueue(new MockResponse().setResponseCode(400).setBody(taskBlocking));
     server.enqueue(new MockResponse().setResponseCode(400).setBody(taskBlocking));
 
     try {
       mockApi().zones();
-      failBecauseExceptionWasNotThrown(DynECTException.class);
-    } catch (DynECTException e) {
+      failBecauseExceptionWasNotThrown(RetryableException.class);
+    } catch (RetryableException re) {
+      assertThat(System.currentTimeMillis() - start)
+          .isBetween(4000l, 5100l); // roughly 1 second per try, max 5 seconds.
+      DynECTException e = (DynECTException) re.getCause();
       assertThat(e)
           .hasMessage(
               "status failure: [ILLEGAL_OPERATION: zone: Operation blocked by current task, task_name: ProvisionZone, task_id: 39120953]");
@@ -237,9 +259,34 @@ public class DynECTTest {
                                    + "    },\n"
                                    + "    \"job_id\": 428974777\n"
                                    + "}";
+  static String serviceNS = "{\n"
+                            + "  \"status\": \"success\",\n"
+                            + "  \"data\": [\n"
+                            + "    {\n"
+                            + "      \"zone\": \"denominator.io\",\n"
+                            + "      \"service_class\": \"Primary\",\n"
+                            + "      \"ttl\": 86400,\n"
+                            + "      \"fqdn\": \"denominator.io\",\n"
+                            + "      \"record_type\": \"NS\",\n"
+                            + "      \"rdata\": {\n"
+                            + "        \"nsdname\": \"ns1.p21.dynect.net.\"\n"
+                            + "      },\n"
+                            + "      \"record_id\": 156826633\n"
+                            + "    }\n"
+                            + "  ],\n"
+                            + "  \"job_id\": 1566905457,\n"
+                            + "  \"msgs\": [\n"
+                            + "    {\n"
+                            + "      \"INFO\": \"detail: Found 1 records\",\n"
+                            + "      \"SOURCE\": \"BLL\",\n"
+                            + "      \"ERR_CD\": null,\n"
+                            + "      \"LVL\": \"INFO\"\n"
+                            + "    }\n"
+                            + "  ]\n"
+                            + "}";
   static String
       zones =
-      "{\"status\": \"success\", \"data\": [\"/REST/Zone/0.0.0.0.d.6.e.0.0.a.2.ip6.arpa/\", \"/REST/Zone/126.12.44.in-addr.arpa/\", \"/REST/Zone/denominator.io/\"], \"job_id\": 260657587, \"msgs\": [{\"INFO\": \"get: Your 3 zones\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}";
+      "{\"status\": \"success\", \"data\": [\"/REST/Zone/denominator.io/\"], \"job_id\": 260657587, \"msgs\": [{\"INFO\": \"get: Your 1 zone\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}";
   static String
       noZones =
       "{\"status\": \"success\", \"data\": [], \"job_id\": 260657587, \"msgs\": [{\"INFO\": \"get: Your 0 zones\", \"SOURCE\": \"BLL\", \"ERR_CD\": null, \"LVL\": \"INFO\"}]}";

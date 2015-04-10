@@ -1,28 +1,20 @@
 package denominator.clouddns;
 
-import java.net.URI;
 import java.util.Iterator;
 
 import javax.inject.Inject;
 
 import denominator.clouddns.RackspaceApis.CloudDNS;
 import denominator.clouddns.RackspaceApis.ListWithNext;
-import denominator.clouddns.RackspaceApis.Pager;
+import denominator.clouddns.RackspaceApis.Record;
 import denominator.model.Zone;
 
-import static denominator.clouddns.RackspaceApis.emptyOn404;
+import static denominator.clouddns.CloudDNSFunctions.awaitComplete;
+import static denominator.common.Util.singletonIterator;
 
 class CloudDNSZoneApi implements denominator.ZoneApi {
 
   private final CloudDNS api;
-  private final Pager<Zone> zonePager = new Pager<Zone>() {
-
-    @Override
-    public ListWithNext<Zone> apply(URI nullOrNext) {
-      return nullOrNext == null ? api.domains() : api.domains(nullOrNext);
-    }
-
-  };
 
   @Inject
   CloudDNSZoneApi(CloudDNS api) {
@@ -31,33 +23,87 @@ class CloudDNSZoneApi implements denominator.ZoneApi {
 
   @Override
   public Iterator<Zone> iterator() {
-    final ListWithNext<Zone> first = emptyOn404(zonePager, null);
-    if (first.next == null) {
-      return first.iterator();
+    return new ZipWithDomain(api.domains());
+  }
+
+  @Override
+  public Iterator<Zone> iterateByName(String name) {
+    ListWithNext<Zone> zones = api.domainsByName(name);
+    if (zones.isEmpty()) {
+      return singletonIterator(null);
     }
-    return new Iterator<Zone>() {
-      Iterator<Zone> current = first.iterator();
-      URI next = first.next;
+    return singletonIterator(zipWithSOA(zones.get(0)));
+  }
 
-      @Override
-      public boolean hasNext() {
-        while (!current.hasNext() && next != null) {
-          ListWithNext<Zone> nextPage = emptyOn404(zonePager, next);
-          current = nextPage.iterator();
-          next = nextPage.next;
-        }
-        return current.hasNext();
-      }
+  /**
+   * CloudDNS doesn't expose the domain's ttl in the list api.
+   */
+  private Zone zipWithSOA(Zone next) {
+    Record soa = api.recordsByNameAndType(Integer.parseInt(next.id()), next.name(), "SOA").get(0);
+    return Zone.create(next.id(), next.name(), soa.ttl, next.email());
+  }
 
-      @Override
-      public Zone next() {
-        return current.next();
-      }
+  class ZipWithDomain implements Iterator<Zone> {
 
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
+    ListWithNext<Zone> list;
+    int i = 0;
+    int length;
+
+    ZipWithDomain(ListWithNext<Zone> list) {
+      this.list = list;
+      this.length = list.size();
+    }
+
+    @Override
+    public boolean hasNext() {
+      while (i == length && list.next != null) {
+        list = api.domains(list.next);
+        length = list.size();
+        i = 0;
       }
-    };
+      return i < length;
+    }
+
+    @Override
+    public Zone next() {
+      return zipWithSOA(list.get(i++));
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  @Override
+  public String put(Zone zone) {
+    if (zone.id() != null) {
+      return updateZone(zone.id(), zone);
+    }
+    try {
+      return awaitComplete(api, api.createDomain(zone.name(), zone.email(), zone.ttl()));
+    } catch (IllegalStateException e) {
+      if (e.getMessage().indexOf("already exists") == -1) {
+        throw e;
+      }
+      String id = api.domainsByName(zone.name()).get(0).id();
+      return updateZone(id, zone);
+    }
+  }
+
+  private String updateZone(String id, Zone zone) {
+    awaitComplete(api, api.updateDomain(id, zone.email(), zone.ttl()));
+    return id;
+  }
+
+  @Override
+  public void delete(String id) {
+    try {
+      awaitComplete(api, api.deleteDomain(id));
+    } catch (IllegalStateException e) {
+      if (e.getMessage().indexOf("ObjectNotFoundException") == -1) {
+        throw e;
+      }
+    }
   }
 }
