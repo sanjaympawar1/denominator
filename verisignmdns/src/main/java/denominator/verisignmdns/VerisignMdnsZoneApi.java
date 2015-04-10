@@ -10,6 +10,22 @@ import denominator.model.Zone;
 
 final class VerisignMdnsZoneApi implements denominator.ZoneApi {
     private static final int DEFAULT_PAGE_SIZE = 500;
+
+    @Override
+    public Iterator<Zone> iterateByName(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String put(Zone zone) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void delete(String id) {
+        throw new UnsupportedOperationException();
+    }
+
     private final VerisignMdns api;
 
     @Inject
