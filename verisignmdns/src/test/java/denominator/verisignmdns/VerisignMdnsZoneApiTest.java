@@ -8,9 +8,7 @@ import static denominator.verisignmdns.VerisignMdnsTest.mockZoneApi;
 import static denominator.verisignmdns.VerisignMdnsTest.zoneListRequestTemplate;
 import static denominator.verisignmdns.VerisignMdnsTest.zoneListResponse;
 import static java.lang.String.format;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNull;
+import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -34,7 +32,7 @@ public class VerisignMdnsZoneApiTest {
             ZoneApi api = mockZoneApi(server.getPort());
             Zone zone = api.iterator().next();
             assertEquals(zone.name(), VALID_ZONE_NAME1);
-            assertNull(zone.id());
+            assertNotNull(zone.id());
             assertEquals(server.getRequestCount(), 1);
 
             String expectedRequest = format(zoneListRequestTemplate, TEST_USER_NAME, TEST_PASSWORD);
