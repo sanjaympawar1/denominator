@@ -18,6 +18,22 @@ interface VerisignMdns {
     List<Zone> getZones(@Param("zoneListPage") int page, @Param("pageSize") int pageSize);
 
     @RequestLine("POST")
+    @Body("<urn2:createZone>"
+                + "<urn2:domainName>{zoneName}</urn2:domainName>"
+                + "<urn2:type>DNS Hosting</urn2:type>"
+                + "<urn2:serviceLevel>COMPLETE</urn2:serviceLevel>"
+            + "</urn2:createZone>")
+    void createZone(@Param("zoneName") String zoneName);
+
+    @RequestLine("POST")
+    @Body("<ns3:deleteZone xmlns=\"urn:com:verisign:dnsa:messaging:schema:1\" "
+                        + "xmlns:ns2=\"urn:com:verisign:dnsa:auth:schema:1\" "
+                        + "xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
+                + "<ns3:domainName>{zoneName}</ns3:domainName>"
+            + "</ns3:deleteZone>")
+    void deleteZone(@Param("zoneName") String zoneName);
+
+    @RequestLine("POST")
     @Body("<urn2:getResourceRecordList>"
             + "<urn2:domainName>{zoneName}</urn2:domainName>"
             + "<urn2:listPagingInfo>"
@@ -27,6 +43,7 @@ interface VerisignMdns {
          + "</urn2:getResourceRecordList>")
     List<Record> getResourceRecords(@Param("zoneName") String zoneName, @Param("page") int page,
             @Param("pageSize") int pageSize);
+
 
     @RequestLine("POST")
     @Body("<ns3:getResourceRecordList xmlns='urn:com:verisign:dnsa:auth:schema:1' "

@@ -1,18 +1,13 @@
 package denominator.verisignmdns;
 
-import static denominator.verisignmdns.VerisignMdnsTest.TEST_PASSWORD;
-import static denominator.verisignmdns.VerisignMdnsTest.TEST_USER_NAME;
-import static denominator.verisignmdns.VerisignMdnsTest.VALID_ZONE_NAME1;
-import static denominator.verisignmdns.VerisignMdnsTest.authFailureResponse;
-import static denominator.verisignmdns.VerisignMdnsTest.mockZoneApi;
-import static denominator.verisignmdns.VerisignMdnsTest.zoneListRequestTemplate;
-import static denominator.verisignmdns.VerisignMdnsTest.zoneListResponse;
+import static denominator.verisignmdns.VerisignMdnsTest.*;
 import static java.lang.String.format;
 import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.util.Iterator;
 
+import junit.framework.Assert;
 import org.testng.annotations.Test;
 
 import com.google.mockwebserver.MockResponse;
@@ -43,6 +38,39 @@ public class VerisignMdnsZoneApiTest {
     }
 
     @Test
+    public void validCreateZone() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(zoneCreateResponse));
+        server.enqueue(new MockResponse().setBody(zoneListResponse));
+        server.enqueue(new MockResponse().setBody(zoneDeleteResponse));
+        server.play();
+        try {
+            ZoneApi api = mockZoneApi(server.getPort());
+            Zone zone = getTestZone();
+            api.put(zone);
+            assertEquals(server.getRequestCount(), 1);
+            String expectedRequest = format(zoneCreateRequestTemplete, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1);
+            assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
+
+            Iterator<Zone> zoneIterator = api.iterateByName(zone.name());
+            assertTrue(zoneIterator.hasNext());
+            Zone receivedZone = zoneIterator.next();
+            assertEquals(zone.name(), receivedZone.name());
+            assertFalse(zoneIterator.hasNext());
+            assertNotNull(server.takeRequest().getBody());
+
+            api.delete(zone.name());
+            expectedRequest = format(zoneDeleteRequestTemplete, TEST_USER_NAME, TEST_PASSWORD, VALID_ZONE_NAME1);
+            assertEquals(new String(server.takeRequest().getBody()), expectedRequest);
+
+        } catch(Exception e) {
+            assertFalse(true, "Test failled due to exception " + e.getMessage());
+        }
+        finally {
+            server.shutdown();
+        }
+    }
+    @Test
     public void authenticationFailResponse() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();
         server.enqueue(new MockResponse().setBody(authFailureResponse));
@@ -55,5 +83,9 @@ public class VerisignMdnsZoneApiTest {
         } finally {
             server.shutdown();
         }
+    }
+
+    private static Zone getTestZone() {
+        return Zone.create(VALID_ZONE_NAME1, VALID_ZONE_NAME1, 86000, "");
     }
 }

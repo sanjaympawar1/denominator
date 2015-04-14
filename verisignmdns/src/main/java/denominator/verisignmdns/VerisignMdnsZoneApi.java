@@ -8,22 +8,28 @@ import javax.inject.Inject;
 
 import denominator.model.Zone;
 
+import static denominator.common.Preconditions.checkNotNull;
+import static denominator.common.Util.filter;
+import static denominator.model.Zones.nameEqualTo;
+
 final class VerisignMdnsZoneApi implements denominator.ZoneApi {
     private static final int DEFAULT_PAGE_SIZE = 500;
 
     @Override
     public Iterator<Zone> iterateByName(String name) {
-        throw new UnsupportedOperationException();
+        checkNotNull(name, "name was null");
+        return filter(iterator(), nameEqualTo(name));
     }
 
     @Override
     public String put(Zone zone) {
-        throw new UnsupportedOperationException();
+        api.createZone(zone.name());
+        return zone.name();
     }
 
     @Override
     public void delete(String id) {
-        throw new UnsupportedOperationException();
+        api.deleteZone(id);
     }
 
     private final VerisignMdns api;

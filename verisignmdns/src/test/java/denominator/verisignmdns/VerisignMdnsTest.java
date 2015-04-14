@@ -254,6 +254,57 @@ public class VerisignMdnsTest {
                  + "</ns2:getZoneListRes>"
             + "</S:Body>"
          + "</S:Envelope>";
+
+    public static final String zoneCreateRequestTemplete =
+            TEMPLATE_HEAD
+                +"<urn2:createZone>"
+                    + "<urn2:domainName>%s</urn2:domainName>"
+                    + "<urn2:type>DNS Hosting</urn2:type>"
+                    + "<urn2:serviceLevel>COMPLETE</urn2:serviceLevel>"
+                + "</urn2:createZone>"
+            + TEMPLATE_TAIL;
+
+    public static final String zoneCreateResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                        + "<S:Body>"
+                            + "<ns3:createZoneRes xmlns='urn:com:verisign:dnsa:auth:schema:1'"
+                                    + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'"
+                                    + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'"
+                                    + "xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
+                                + "<ns3:callSuccess>true</ns3:callSuccess>"
+                                + "<ns3:zoneInfo>"
+                                    + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>"
+                                    + "<ns3:type>DNS Hosting</ns3:type>"
+                                    + "<ns3:status>ACTIVE</ns3:status>"
+                                    + "<ns3:createTimestamp>2015-04-13T08:57:25.000Z</ns3:createTimestamp>"
+                                + "</ns3:zoneInfo>"
+                            + "</ns3:createZoneRes>"
+                        + "</S:Body>"
+             + "</S:Envelope>";
+
+    public static final String zoneDeleteRequestTemplete =
+            TEMPLATE_HEAD
+                + "<ns3:deleteZone xmlns=\"urn:com:verisign:dnsa:messaging:schema:1\" "
+                        + "xmlns:ns2=\"urn:com:verisign:dnsa:auth:schema:1\" "
+                        + "xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
+                    + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>"
+                + "</ns3:deleteZone>"
+            + TEMPLATE_TAIL;
+
+    public static final String zoneDeleteResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                    + "<S:Body>"
+                        + "<ns3:dnsaWSRes xmlns='urn:com:verisign:dnsa:auth:schema:1'"
+                                + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'"
+                                + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'"
+                                + "xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
+                            + "<ns3:callSuccess>true</ns3:callSuccess>"
+                        + "</ns3:dnsaWSRes>"
+                    + "</S:Body>"
+            + "</S:Envelope>";
+
     public static final String authFailureResponse =
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
