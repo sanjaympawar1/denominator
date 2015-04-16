@@ -34,6 +34,25 @@ interface VerisignMdns {
     void deleteZone(@Param("zoneName") String zoneName);
 
     @RequestLine("POST")
+    @Body("<urn2:getZoneInfo>"
+                + "<urn2:domainName>{zoneName}</urn2:domainName>"
+           + "</urn2:getZoneInfo>")
+    ZoneInfo getZoneInfo(@Param("zoneName") String zoneName);
+
+    @RequestLine("POST")
+    @Body("<urn2:updateSOA>"
+            + "<urn2:domainName>{zoneName}</urn2:domainName>"
+            + "<urn2:zoneSOAInfo>"
+            + "<urn2:email>{email}</urn2:email>"
+            + "<urn2:retry>{retry}</urn2:retry>"
+            + "<urn2:ttl>{ttl}</urn2:ttl>"
+            + "<urn2:refresh>{refresh}</urn2:refresh>"
+            + "<urn2:expire>{expire}</urn2:expire>"
+            + "</urn2:zoneSOAInfo>"
+          + "</urn2:updateSOA>")
+    void updateZoneSOA(@Param("zoneName") String zoneName, @Param("email") String email, @Param("retry") int retry, @Param("ttl") int ttl, @Param("refresh") int refresh, @Param("expire") int expire);
+
+    @RequestLine("POST")
     @Body("<urn2:getResourceRecordList>"
             + "<urn2:domainName>{zoneName}</urn2:domainName>"
             + "<urn2:listPagingInfo>"
@@ -108,6 +127,16 @@ interface VerisignMdns {
             }
             return result;
         }
+    }
+
+    static class ZoneInfo {
+        String name;
+        String email;
+        int ttl;
+        int retry;
+        int refresh;
+        int expire;
+        long serial;
     }
 }
 

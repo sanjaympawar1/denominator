@@ -23,6 +23,7 @@ import denominator.config.WeightedUnsupported;
 import denominator.verisignmdns.VerisignMdnsContentHandler.RecordListHandler;
 import denominator.verisignmdns.VerisignMdnsContentHandler.ZoneListHandler;
 import denominator.verisignmdns.VerisignMdnsErrorDecoder.VerisignMdnsError;
+import denominator.verisignmdns.VerisignMdnsContentHandler.ZoneInfoHandler;
 import feign.Feign;
 import feign.Logger;
 import feign.codec.Decoder;
@@ -122,9 +123,10 @@ public class VerisignMdnsProvider extends BasicProvider {
         @Singleton
         Feign feign(Logger logger, Logger.Level logLevel) {
           Decoder decoder = SAXDecoder.builder()//
-                  .registerContentHandler(ZoneListHandler.class)//
-                  .registerContentHandler(RecordListHandler.class)//
-                  .registerContentHandler(VerisignMdnsError.class).build();
+                  .registerContentHandler(ZoneListHandler.class)
+                  .registerContentHandler(RecordListHandler.class)
+                  .registerContentHandler(VerisignMdnsError.class)
+                  .registerContentHandler(ZoneInfoHandler.class).build();
 
           return Feign.builder()
               .logger(logger)

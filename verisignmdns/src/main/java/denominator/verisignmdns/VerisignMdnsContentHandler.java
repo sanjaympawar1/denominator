@@ -12,6 +12,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import denominator.model.Zone;
 import denominator.verisignmdns.VerisignMdns.Record;
 import feign.sax.SAXDecoder.ContentHandlerWithResult;
+import denominator.verisignmdns.VerisignMdns.ZoneInfo;
 
 final class VerisignMdnsContentHandler {
 
@@ -111,6 +112,94 @@ final class VerisignMdnsContentHandler {
         public void characters(char ch[], int start, int length) throws SAXException {
             if (inResourceRecordSet && length > 0) {
                 currentText.append(new String(ch, start, length));
+            }
+        }
+    }
+
+    static class ZoneInfoHandler extends DefaultHandler implements ContentHandlerWithResult<ZoneInfo> {
+        private ZoneInfo zoneInfo = new ZoneInfo();
+
+        @Inject
+        ZoneInfoHandler() {}
+
+        private boolean inZoneSOAInfo = false;
+        private boolean inDomainName = false;
+        private StringBuilder currentElementText;
+
+        @Override
+        public ZoneInfo result() {
+            return zoneInfo;
+        }
+
+        @Override
+        public void startElement(String uri, String name, String qName, Attributes attrs) {
+
+            if (qName.endsWith("zoneSOAInfo")) {
+                inZoneSOAInfo = true;
+                inDomainName = false;
+                currentElementText = new StringBuilder();
+            }
+            if (qName.endsWith("domainName")) {
+                inDomainName = true;
+                inZoneSOAInfo = false;
+                currentElementText = new StringBuilder();
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String name, String qName) {
+
+            if (inDomainName && qName.endsWith("domainName")) {
+                zoneInfo.name = currentElementText.toString().trim();
+                inDomainName = false;
+                currentElementText = null;
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("zoneSOAInfo")) {
+                inZoneSOAInfo = false;
+                currentElementText = null;
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("email")) {
+                zoneInfo.email = currentElementText.toString().trim();
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("retry")) {
+                zoneInfo.retry = Integer.parseInt(currentElementText.toString().trim());
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("refresh")) {
+                zoneInfo.refresh = Integer.parseInt(currentElementText.toString().trim());
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("ttl")) {
+                zoneInfo.ttl = Integer.parseInt(currentElementText.toString());
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("expire")) {
+                zoneInfo.expire = Integer.parseInt(currentElementText.toString().trim());
+            }
+
+            if (inZoneSOAInfo && qName.endsWith("serial")) {
+                zoneInfo.serial = Long.parseLong(currentElementText.toString().trim());
+            }
+
+            currentElementText = new StringBuilder();
+        }
+
+        /**
+         * This method is to ensure all space characters are accounted for while processing rData
+         */
+        @Override
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+            String tempStr = new String(ch, start, length);
+            currentElementText.append(tempStr);
+        }
+
+        @Override
+        public void characters(char ch[], int start, int length) throws SAXException {
+            if ((inZoneSOAInfo || inDomainName) && length > 0) {
+                currentElementText.append(new String(ch, start, length));
             }
         }
     }

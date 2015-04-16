@@ -49,6 +49,13 @@ public class VerisignMdnsTest {
     public static final String VALID_RDATA_MX2 = "50 mail2";
     public static final String VALID_RDATA_MX3 = "100 mail3";
     public static final String VALID_ZONE_NAME = "mytest.com";
+    public static final String VALID_SOA_EMAIL = "joesmith.email.com.";
+    public static final String VALID_SOA_RETRY = "7200";
+    public static final String VALID_SOA_TTL = "86400";
+    public static final String VALID_SOA_REFRESH = "28800";
+    public static final String VALID_SOA_EXPIRE = "1209600";
+    public static final String VALID_SOA_SERIAL = "1409628133";
+
 
     static final String TEMPLATE_HEAD = 
             "<?xml version='1.0' encoding='UTF-8'?>"
@@ -268,9 +275,9 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
              + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                         + "<S:Body>"
-                            + "<ns3:createZoneRes xmlns='urn:com:verisign:dnsa:auth:schema:1'"
-                                    + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'"
-                                    + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'"
+                            + "<ns3:createZoneRes xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                                    + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                                    + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1' "
                                     + "xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
                                 + "<ns3:callSuccess>true</ns3:callSuccess>"
                                 + "<ns3:zoneInfo>"
@@ -288,7 +295,7 @@ public class VerisignMdnsTest {
                 + "<ns3:deleteZone xmlns=\"urn:com:verisign:dnsa:messaging:schema:1\" "
                         + "xmlns:ns2=\"urn:com:verisign:dnsa:auth:schema:1\" "
                         + "xmlns:ns3=\"urn:com:verisign:dnsa:api:schema:1\">"
-                    + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>"
+                    + "<ns3:domainName>%s</ns3:domainName>"
                 + "</ns3:deleteZone>"
             + TEMPLATE_TAIL;
 
@@ -296,13 +303,85 @@ public class VerisignMdnsTest {
             "<?xml version='1.0' encoding='UTF-8'?>"
             + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
                     + "<S:Body>"
-                        + "<ns3:dnsaWSRes xmlns='urn:com:verisign:dnsa:auth:schema:1'"
-                                + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1'"
-                                + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1'"
+                        + "<ns3:dnsaWSRes xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                                + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                                + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1' "
                                 + "xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
                             + "<ns3:callSuccess>true</ns3:callSuccess>"
                         + "</ns3:dnsaWSRes>"
                     + "</S:Body>"
+            + "</S:Envelope>";
+
+    public static final String zoneInfoTemplate =
+            TEMPLATE_HEAD
+                + "<urn2:getZoneInfo>"
+                        + "<urn2:domainName>%s</urn2:domainName>"
+                + "</urn2:getZoneInfo>"
+            + TEMPLATE_TAIL;
+
+    public static final String zoneInfoResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                    + "<S:Body>"
+                        + "<ns3:getZoneInfoRes xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                                + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                                + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1' "
+                                + "xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
+                            + "<ns3:callSuccess>true</ns3:callSuccess>"
+                            + "<ns3:primaryZoneInfo>"
+                                + "<ns3:domainName>" + VALID_ZONE_NAME1 + "</ns3:domainName>"
+                                + "<ns3:type>DNS Hosting</ns3:type>"
+                                + "<ns3:status>ACTIVE</ns3:status>"
+                                + "<ns3:createTimestamp>2014-09-02T02:54:13.000Z</ns3:createTimestamp>"
+                                + "<ns3:updateTimestamp>2015-04-15T05:33:01.000Z</ns3:updateTimestamp>"
+                                + "<ns3:zoneSOAInfo>"
+                                    + "<ns3:email>" + VALID_SOA_EMAIL + "</ns3:email>"
+                                    + "<ns3:retry>" + VALID_SOA_RETRY + "</ns3:retry>"
+                                    + "<ns3:ttl>" + VALID_SOA_TTL + "</ns3:ttl>"
+                                    + "<ns3:refresh>" + VALID_SOA_REFRESH + "</ns3:refresh>"
+                                    + "<ns3:expire>" + VALID_SOA_EXPIRE + "</ns3:expire>"
+                                    + "<ns3:serial>" + VALID_SOA_SERIAL + "</ns3:serial>"
+                                + "</ns3:zoneSOAInfo>"
+                                + "<ns3:serviceLevel>COMPLETE</ns3:serviceLevel>"
+                                + "<ns3:webParking>"
+                                    + "<ns3:parkingEnabled>false</ns3:parkingEnabled>"
+                                + "</ns3:webParking>"
+                                + "<ns3:verisignNSInfo>"
+                                    + "<ns3:virtualNameServerId>10</ns3:virtualNameServerId>"
+                                    + "<ns3:name>a1.verisigndns.com</ns3:name>"
+                                    + "<ns3:ipAddress>209.112.113.33</ns3:ipAddress>"
+                                    + "<ns3:ipv6Address>2001:500:7967::2:33</ns3:ipv6Address>"
+                                    + "<ns3:location>Anycast Global</ns3:location>"
+                                + "</ns3:verisignNSInfo>"
+                            + "</ns3:primaryZoneInfo>"
+                        + "</ns3:getZoneInfoRes>"
+                    + "</S:Body>"
+            + "</S:Envelope>";
+
+    public static final String soaUpdateTemplate =
+            TEMPLATE_HEAD
+                + "<urn2:updateSOA>"
+                    + "<urn2:domainName>%s</urn2:domainName>"
+                    + "<urn2:zoneSOAInfo>"
+                        + "<urn2:email>%s</urn2:email>"
+                        + "<urn2:retry>%s</urn2:retry>"
+                        + "<urn2:ttl>%s</urn2:ttl>"
+                        + "<urn2:refresh>%s</urn2:refresh>"
+                        + "<urn2:expire>%s</urn2:expire>"
+                    + "</urn2:zoneSOAInfo>"
+                + "</urn2:updateSOA>"
+            + TEMPLATE_TAIL;
+
+    public static final String soaUpdateResponse =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            + "<S:Envelope xmlns:S='http://www.w3.org/2003/05/soap-envelope'>"
+                + "<S:Body>"
+                    + "<ns3:dnsaWSRes xmlns='urn:com:verisign:dnsa:auth:schema:1' "
+                                + "xmlns:ns2='urn:com:verisign:dnsa:messaging:schema:1' "
+                                + "xmlns:ns3='urn:com:verisign:dnsa:api:schema:1' xmlns:ns4='urn:com:verisign:dnsa:api:schema:2'>"
+                        + "<ns3:callSuccess>true</ns3:callSuccess>"
+                    + "</ns3:dnsaWSRes>"
+                + "</S:Body>"
             + "</S:Envelope>";
 
     public static final String authFailureResponse =
@@ -451,7 +530,7 @@ public class VerisignMdnsTest {
                                        + "<ns3:ttl>%s</ns3:ttl>"
                                        + "<ns3:rData>%s</ns3:rData>"
                                   + "</ns3:resourceRecord>"
-                               + "</ns3:updateResourceRecordRes>'"
+                               + "</ns3:updateResourceRecordRes>"
                      + "</S:Body>"
                + "</S:Envelope>";
 
