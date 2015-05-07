@@ -125,8 +125,8 @@ public class VerisignMdnsProvider extends BasicProvider {
           Decoder decoder = SAXDecoder.builder()//
                   .registerContentHandler(ZoneListHandler.class)
                   .registerContentHandler(RecordListHandler.class)
-                  .registerContentHandler(VerisignMdnsError.class)
-                  .registerContentHandler(ZoneInfoHandler.class).build();
+                  .registerContentHandler(ZoneInfoHandler.class)
+                  .registerContentHandler(VerisignMdnsError.class).build();
 
           return Feign.builder()
               .logger(logger)

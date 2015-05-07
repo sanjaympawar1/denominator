@@ -8,7 +8,6 @@ import static org.testng.Assert.*;
 import java.io.IOException;
 import java.util.Iterator;
 
-import junit.framework.Assert;
 import org.testng.annotations.Test;
 
 import com.google.mockwebserver.MockResponse;
@@ -96,6 +95,35 @@ public class VerisignMdnsZoneApiTest {
     }
 
     @Test
+    public void invalidZoneSOAUpdate() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(responseInvalidZone).setResponseCode(500));
+        server.play();
+        try {
+            VerisignMdnsZoneApi api = (VerisignMdnsZoneApi) mockZoneApi(server.getPort());
+            ZoneInfo zoneInfo = getTestZoneInfo();
+            zoneInfo.name = "non existting zone";
+            api.updateSOA(zoneInfo);
+            assertTrue(false, "Failed, expected exception got none");
+        } catch (Exception ex) {
+            assertTrue(true, "Exception :" + ex.getMessage());
+        }
+    }
+
+    @Test
+    public void invalidZoneDelete() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(responseInvalidZone).setResponseCode(500));
+        server.play();
+        try {
+            VerisignMdnsZoneApi api = (VerisignMdnsZoneApi) mockZoneApi(server.getPort());
+            api.delete("non existing zone");
+            assertTrue(false, "Failed, expected exception got none");
+        } catch (Exception ex) {
+            assertTrue(true, "Exception :" + ex.getMessage());
+        }
+    }
+    @Test
     public void validCreateZone() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();
         server.enqueue(new MockResponse().setBody(zoneCreateResponse));
@@ -132,6 +160,22 @@ public class VerisignMdnsZoneApiTest {
             server.shutdown();
         }
     }
+
+    @Test
+    public void invalidCreateZoneAlreadyExisting() throws IOException, InterruptedException {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(new MockResponse().setBody(responseAlreadyExistingZone).setResponseCode(500));
+        server.play();
+        try {
+            VerisignMdnsZoneApi api = (VerisignMdnsZoneApi) mockZoneApi(server.getPort());
+            Zone zone = getTestZone();
+            api.put(zone);
+            assertTrue(false, "Failed expected exception got none.");
+        } catch (Exception ex) {
+            assertTrue(true);
+        }
+    }
+
     @Test
     public void authenticationFailResponse() throws IOException, InterruptedException {
         MockWebServer server = new MockWebServer();
