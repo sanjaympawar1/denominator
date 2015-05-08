@@ -21,7 +21,9 @@ final class VerisignMdnsZoneApi implements denominator.ZoneApi {
         checkNotNull(name, "name was null");
         ZoneInfo zoneInfo = zoneInfo(name);
         ArrayList<Zone> temp = new ArrayList<Zone>();
-        temp.add(Zone.create(zoneInfo.name, zoneInfo.name, zoneInfo.ttl, zoneInfo.email));
+        if (zoneInfo != null) {
+            temp.add(Zone.create(zoneInfo.name, zoneInfo.name, zoneInfo.ttl, zoneInfo.email));
+        }
         return temp.iterator();
     }
 
@@ -60,8 +62,18 @@ final class VerisignMdnsZoneApi implements denominator.ZoneApi {
         return result.iterator();
     }
 
+
     ZoneInfo zoneInfo(String zoneName) {
-        return api.getZoneInfo(zoneName);
+       try {
+            return api.getZoneInfo(zoneName);
+       } catch(VerisignMdnsException ex) {
+            if (ex.getMessage().contains("The domain name could not be found.")) {
+                //ignored
+            } else {
+                throw ex;
+            }
+       }
+        return null;
     }
 
     void updateSOA(ZoneInfo zoneInfo){
